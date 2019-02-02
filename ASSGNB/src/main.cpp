@@ -8,14 +8,9 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include "taxPayer.hpp"
 
 const int SIZE = 2;
-
-struct taxPayer{
-   float taxRate;
-   float income;
-   float taxes;
-};
 
 std::vector<taxPayer> citizen;
 
@@ -68,8 +63,10 @@ void taxTaker(std::vector<taxPayer> &citizen)
          {
             std::cout << "Please enter a number greater than 0" << std::endl;
             std::cin.ignore(std::numeric_limits<std::streamsize>::max());
+            std::cin.clear();
             isInvalid = true;
          }
+      
       }while(isInvalid);
       isInvalid = false;
       do
