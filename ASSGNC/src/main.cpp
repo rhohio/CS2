@@ -1,9 +1,9 @@
 /*
    COPYRIGHT (C) 2017 Student Name (UANET ID ) All rights reserved.
-   CSII assignment 1
-   Author.  Student Name
-            zippy@zips.uakron.edu
-   Version. 1.01 09.09.2017
+   CSII Assignment C
+   Author.  Kyle Dabbieri
+            kad1445@zips.uakron.edu
+   Version. 1.01 02.14.2019
    Purpose: This program is the test cases for the assignment
 */
 
