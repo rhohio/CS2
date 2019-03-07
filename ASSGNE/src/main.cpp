@@ -7,25 +7,13 @@
    Purpose: Splitting classes into hpp and cpp files, namepaces
 */
 #include "Complex.hpp"
-#include "Complex.cpp"
-#include "myFunction.cpp"
 #include "myFunction.hpp"
 #include <iostream>
-
-
-
-namespace
-{
-	extern const int SIZE = 10;
-}
-
-void myFunction(char []);
 
 namespace myNamespace1
 {
 	void myGreeting();
 }
-
 
 namespace myNamespace2
 {
@@ -38,28 +26,17 @@ int main()
 {
 	char myArray[SIZE] = "123456789";
 
-	// call your function using only the array
-	// to demonstrate the SIZE is sharable (external)
-
 	myFunction(myArray);
-
-	// call your second namespace greeting function
 
 	{
 		using namespace myNamespace2;
-
 		myGreeting();
 	}
-
-	// call your first namespace greeting function
 
 	{
 		using namespace myNamespace1;
-
 		myGreeting();
 	}
-
-	// call your first namespace greeting function
 
 	theGreeting();
 
