@@ -9,14 +9,17 @@ class Complex{
       double realPart;
       double imaginaryPart;
    public:
+		//constructors
 		Complex(double, double);
+		Complex();
       
       // setters/getters
       double inline getRealPart() const { return realPart; };
       double inline getImaginaryPart() const { return imaginaryPart; };
-      void setComplexNumber(double, double);
+      void setRealPart(double);
+		void setImaginaryPart(double);
 
-		//overloaded assignment function definitions
+		//overloaded operators
 		Complex operator+(const Complex&);
 		Complex operator-(const Complex&);
 		Complex operator*(const Complex&);
