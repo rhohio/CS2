@@ -3,10 +3,18 @@
 
 class charList{
    private:
-      struct node{
+      struct listNode{
          char value;
-         node *newNode;
-      }
+         node *nodePtr;
+      };
+   public:
+      charList();
+      ~charList();
+   
+      void appendNode(char);
+      void insertNode(char);
+      void deleteNode(char);
+      void displayList();
 
 
 
