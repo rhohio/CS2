@@ -5,23 +5,18 @@ class charList{
    private:
       struct listNode{
          char value;
-         node *nodePtr;
+         listNode *next;
       };
    public:
+      //constructors & deconstructors
       charList();
       ~charList();
-   
+
+      //member functions
       void appendNode(char);
       void insertNode(char);
       void deleteNode(char);
-      void displayList();
-
-
-
-}
-
-
-
-
+      void displayList() const;
+};
 
 #endif

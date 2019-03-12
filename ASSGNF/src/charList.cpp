@@ -19,6 +19,7 @@
 // post: standard output of the linked list        *
 //**************************************************
 #include "charList.hpp"
+#include  <iostream>
 
 
 void charList::displayList() const
@@ -59,8 +60,8 @@ void charList::displayList() const
 
 charList::~CharList()
 {
-   ListNode *nodePtr;   // To traverse the list
-   ListNode *nextNode;  // To point to the next node
+   listNode *nodePtr;   // To traverse the list
+   listNode *nextNode;  // To point to the next node
 
    // Position nodePtr at the head of the list.
    nodePtr = head;
