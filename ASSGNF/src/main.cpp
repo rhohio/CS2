@@ -6,7 +6,7 @@
 int main()
 {
    // Define a NumberList object.
-   CharList list;
+   charList list;
 
    // Append some values to the list.
    list.appendNode('t');

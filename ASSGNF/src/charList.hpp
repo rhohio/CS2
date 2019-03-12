@@ -7,6 +7,8 @@ class charList{
          char value;
          listNode *next;
       };
+
+      listNode *head;
    public:
       //constructors & deconstructors
       charList();

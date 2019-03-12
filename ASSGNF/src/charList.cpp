@@ -21,6 +21,10 @@
 #include "charList.hpp"
 #include  <iostream>
 
+charList::charList()
+{
+   head = nullptr;
+}
 
 void charList::displayList() const
 {
@@ -47,6 +51,95 @@ void charList::displayList() const
    std::cout << std::endl;
 }
 
+void charList::appendNode(char input)
+{
+   listNode *newNode;
+   listNode *nodePtr;
+
+   newNode = new listNode;
+   newNode->value = input;
+   newNode->next = nullptr;
+
+   if(!head)
+   {
+      head = newNode;
+   }   
+   else
+   {
+      nodePtr = head;
+      while(nodePtr->next)
+         nodePtr = nodePtr->next;
+      
+      nodePtr->next = newNode;
+   }
+}
+
+void charList::insertNode(char input)
+{
+   listNode *newNode;
+   listNode *nodePtr;
+   listNode *previousNode = nullptr;
+
+   newNode = new listNode;
+   newNode->value = input;
+
+   if(!head)
+   {
+      head = newNode;
+      newNode->next = nullptr;
+   }
+   else
+   {
+      nodePtr = head;
+      previousNode = nullptr;
+      while(nodePtr != nullptr && nodePtr->value < input)
+      {
+         previousNode = nodePtr;
+         nodePtr = nodePtr->next;
+      }
+      if(previousNode == nullptr)
+      {
+         head = newNode;
+         newNode->next = nodePtr;
+      }
+      else
+      {
+         previousNode->next = newNode;
+         newNode->next = nodePtr;
+      }
+   }
+}
+
+void charList::deleteNode(char input)
+{
+   listNode *nodePtr;
+   listNode *previousNode;
+
+   if(!head)
+   {
+      return;
+   }
+   if(head->value == input)
+   {
+      nodePtr = head->next;
+      delete head;
+      head = nodePtr;
+   }
+   else
+   {
+      nodePtr = head;
+      while(nodePtr != nullptr && nodePtr->value != input)
+      {
+         previousNode = nodePtr;
+         nodePtr = nodePtr->next;
+      }
+      if(nodePtr)
+      {
+         previousNode->next = nodePtr->next;
+         delete nodePtr;
+      }
+   }
+}
 
 // More of your coding required here 
 
@@ -58,7 +151,7 @@ void charList::displayList() const
 // post: destroyed object                          *
 //**************************************************
 
-charList::~CharList()
+charList::~charList()
 {
    listNode *nodePtr;   // To traverse the list
    listNode *nextNode;  // To point to the next node
