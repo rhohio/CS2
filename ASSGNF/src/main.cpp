@@ -1,5 +1,13 @@
-// This program demonstrates simple operations
-// on a linked list.
+/*
+   COPYRIGHT (C) 2016 Kyle Dabbieri (kad145) All rights reserved.
+   CSII Assignment F
+   Author.  Kyle Dabbieri
+            zippy@zips.uakron.edu
+   Version. 1.01 09.09.2017
+   Purpose: This program demonstrates simple operations
+            on a linked list.
+*/
+
 #include <iostream>
 #include "charList.hpp"
 

@@ -1,23 +1,13 @@
 /*
-   COPYRIGHT (C) 2016 Student Name (UANET ID ) All rights reserved.
-   CSII assignment 5 A
-   Author.  Student Name
+   COPYRIGHT (C) 2016 Kyle Dabbieri (kad145) All rights reserved.
+   CSII Assignment F
+   Author.  Kyle Dabbieri
             zippy@zips.uakron.edu
    Version. 1.01 09.09.2017
-
+   Purpose: This program demonstrates simple operations
+            on a linked list.
 */
-// Implementation file for the NumberList class
 
-// Your coding required here 
-
-
-//**************************************************
-// displayList shows the value                     *
-// stored in each node of the linked list          *
-// pointed to by head.                             *
-// pre: an empty parameter list                    *
-// post: standard output of the linked list        *
-//**************************************************
 #include "charList.hpp"
 #include  <iostream>
 
@@ -26,6 +16,13 @@ charList::charList()
    head = nullptr;
 }
 
+//**************************************************
+// displayList shows the value                     *
+// stored in each node of the linked list          *
+// pointed to by head.                             *
+// pre: an empty parameter list                    *
+// post: standard output of the linked list        *
+//**************************************************
 void charList::displayList() const
 {
    listNode *nodePtr;  // To move through the list
@@ -51,6 +48,8 @@ void charList::displayList() const
    std::cout << std::endl;
 }
 
+//pre : a valid char input
+//post: appends char input to end of linked list
 void charList::appendNode(char input)
 {
    listNode *newNode;
@@ -74,6 +73,9 @@ void charList::appendNode(char input)
    }
 }
 
+//pre : a valid char input
+//post: inserts char input to correct spot in linked list,
+//      which is in decending alphabetical order
 void charList::insertNode(char input)
 {
    listNode *newNode;
@@ -110,6 +112,8 @@ void charList::insertNode(char input)
    }
 }
 
+//pre : valid char input that exists in the linked list
+//post: deletes noded that contains char input
 void charList::deleteNode(char input)
 {
    listNode *nodePtr;
@@ -140,9 +144,6 @@ void charList::deleteNode(char input)
       }
    }
 }
-
-// More of your coding required here 
-
 
 //**************************************************
 // Destructor                                      *
