@@ -37,13 +37,14 @@ struct badString
    badString operator=(const char*);
    badString operator+=(const badString&);
    badString operator+(const badString&);
-   bool operator==(const badString&);
-   bool operator!=(const badString&);
-   bool operator<(const badString&);
-   bool operator>(const badString&);
-   bool operator<=(const badString&);
-   bool operator>=(const badString&);
-   char operator[](const std::size_t);
+   bool operator==(const badString&) const;
+   bool operator!=(const badString&) const;
+   bool operator<(const badString&) const;
+   bool operator>(const badString&) const;
+   bool operator<=(const badString&) const;
+   bool operator>=(const badString&) const;
+   char operator[](const std::size_t) const;
+   char& operator[](const std::size_t);
 
    //member functions
    bool empty() const;
@@ -229,11 +230,11 @@ badString::badString(const char* input)
    len = i;
 }
 
-badString::badString(char* input, int loc)
+badString::badString(char* input, int index)
 {
-   assert(input[0] != '\0' && input[loc]);
+   assert(input[0] != '\0' && input[index]);
    std::size_t i = 0;
-   for(; i < loc; ++i)
+   for(; i < index; ++i)
    {
       str[i] = input[i];
    }
@@ -251,24 +252,13 @@ badString::badString(const badString &right)
    len = i;
 }
 
-   /* Operator Overloaders *
-   
-   badString operator=(const &badString);
-   badString operator=(const std::string);
-   badString operator+=(const &badString);
-   bool operator==(const &badString);
-   bool operator!=(const &badString);
-   bool operator<(const &badString);
-   bool operator>(const &badString);
-   bool operator<=(const &badString);
-   bool operator>=(const &badString);
-
-    *                      */
+// Operator Overloads
 
 badString badString::operator=(const badString &right)
 {
-   str = new char[right.size];
-   for(int i = 0; i < right.size; ++i)
+   delete [] str;
+   str = new char[right.len];
+   for(int i = 0; i < right.len; ++i)
    {
       str[i] = right.str[i];
    }
@@ -279,6 +269,7 @@ badString badString::operator=(const badString &right)
 
 badString badString::operator=(const char *input)
 {
+   delete [] str;
    str = new char[0];
    std::size_t i = 0;
    for(; input[i] != '\0'; ++i)
@@ -287,24 +278,46 @@ badString badString::operator=(const char *input)
    }
    len = i;
    str[i + 1] = '\0';
+   return *this;
 }
 
 badString badString::operator+(const badString &right)
 {
-
+   std::size_t length = len + right.len;
+   char* _str = new char[length];
+   for(int i = 0; i < len; ++i)
+   {
+      _str[i] = str[i];
+   }
+   for(int i = len; i < length; ++i)
+   {
+      _str[i] = right.str[i];
+   }
+   _str[length + 1] = '\0';
+   return badString(_str);
 }
+
+// s1 += s2;
 
 badString badString::operator+=(const badString &right)
 {
-   std::size_t i = len;
-   for(; right.str[i - len] != '\0'; ++i)
+   char *temp = str;
+   str = new char[len + right.len];
+   std::size_t i = 0;
+   for(; temp[i] != '\0'; ++i)
    {
-      str[i] = right.str[i - len];
+      str[i] = temp[i];
    }
-   len = i;
+   std::size_t length = i;
+   for(i = 0; right.str[i] != '\0'; ++i)
+   {
+      str[i + length] = right.str[i];
+   }
+   len = i + length;
+   delete [] temp;
 }
 
-bool badString::operator==(const badString &right)
+bool badString::operator==(const badString &right) const
 {
    for(int i = 0; right.str[i] != '\0'; ++i)
    {
@@ -316,12 +329,12 @@ bool badString::operator==(const badString &right)
    return true;
 }
 
-bool badString::operator!=(const badString &right)
+bool badString::operator!=(const badString &right) const
 {
    return !(*this == right);
 }
 
-bool badString::operator<(const badString &right)
+bool badString::operator<(const badString &right) const
 {
    for(int i = 0; right.str[i] != '\0'; ++i)
    {
@@ -333,35 +346,34 @@ bool badString::operator<(const badString &right)
    return true;
 }
 
-bool badString::operator>(const badString &right)
+bool badString::operator>(const badString &right) const
 {
    return !(*this < right);
 }
 
-bool badString::operator<=(const badString &right)
+bool badString::operator<=(const badString &right) const
 {
    return ((*this < right) || (*this == right));
 }
 
-bool badString::operator>=(const badString &right)
+bool badString::operator>=(const badString &right) const
 {
    return ((*this > right) || (*this == right));
 }
 
-char badString::operator[](const std::size_t loc)
+char badString::operator[](const std::size_t index) const
 {
-   assert((loc <= len) && (loc >= 0));
-   return str[loc];
+   assert((index <= len - 1) && (index >= 0));
+   return str[index];
 }
 
-/*
-const bool empty();
-const std::size_t size();
-char const* data();
-const std::size_t find(char);
-const badString substr(int, int);
-*/
+char& badString::operator[](const std::size_t index)
+{
+   assert((index <= len - 1) && (index >= 0));
+   return str[index];
+}
 
+//Member Functions
 bool badString::empty() const
 {
    return (str[0] == '\0');
@@ -392,7 +404,6 @@ std::size_t badString::find(char target) const
 
 badString badString::substr(int index, int size) const
 {
-   assert((index >= 0) && (index <= len));
-   //TODO: THAT SHIT VV
-   return badString(str, (index + size));
+   assert((index >= 0) && (index <= len - 1));
+   return badString(str + index, size);
 }
