@@ -216,18 +216,22 @@ badString::badString()
 badString::~badString()
 {
    delete [] str;
+   len = 0;
+   str = '\0';
 }
 
 badString::badString(const char* input)
 {
    assert(input[0] != '\0');
-   str = new char[0];
-   std::size_t i = 0;
-   for(; input[i] == '\0'; ++i)
+   std::size_t length = 0;
+   for(; input[length] != '\0'; ++length);
+   str = new char[length + 1];
+   len = length;
+   for(std::size_t i = 0; input[i] != '\0'; ++i)
    {
       str[i] = input[i];
    }
-   len = i;
+   str[len + 1] = '\0';
 }
 
 badString::badString(char* input, int index)
@@ -250,6 +254,7 @@ badString::badString(const badString &right)
       str[i] = right.str[i];
    }
    len = i;
+   str[i + 1] = '\0';
 }
 
 // Operator Overloads
@@ -297,7 +302,6 @@ badString badString::operator+(const badString &right)
    return badString(_str);
 }
 
-// s1 += s2;
 
 badString badString::operator+=(const badString &right)
 {
