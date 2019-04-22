@@ -23,38 +23,40 @@ struct badString
 
    //"private" but not actually private variables
    char* str;
-   std::size_t size = 0;
+   std::size_t len = 0;
 
    //constructors & destructors
    badString();
    ~badString();
-   badString(char*);
+   badString(const char*);
    badString(char*, int);
-   badString(const badString);
+   badString(const badString&);
 
    //operator overloaders
-   badString operator=(const &badString);
-   badString operator=(const std::string);
-   badString operator+=(const &badString);
-   bool operator==(const &badString);
-   bool operator!=(const &badString);
-   bool operator<(const &badString);
-   bool operator>(const &badString);
-   bool operator<=(const &badString);
-   bool operator>=(const &badString);
+   badString operator=(const badString&);
+   badString operator=(const char*);
+   badString operator+=(const badString&);
+   badString operator+(const badString&);
+   bool operator==(const badString&);
+   bool operator!=(const badString&);
+   bool operator<(const badString&);
+   bool operator>(const badString&);
+   bool operator<=(const badString&);
+   bool operator>=(const badString&);
+   char operator[](const std::size_t);
 
-   //memeber functions
-   bool empty();
-   std::size_t size();
+   //member functions
+   bool empty() const;
+   std::size_t size() const;
    char const* data();
-   std::size_t find(char);
-   badString substr(int, int);
+   std::size_t find(char) const;
+   badString substr(int, int) const;
 
 };
 
 
 // Output
-std::ostream& operator<<(std::ostream&, yourString const&);
+std::ostream& operator<<(std::ostream&, badString const&);
 
 // Encapsulate all of the String tests.
 struct Test_string
@@ -62,14 +64,14 @@ struct Test_string
   void default_ctor()
   {
     // Check the default contructor.
-    yourString s;
+    badString s;
     assert(s.empty());
   }
 
   void string_ctor()
   {
     char const* str = "hello";
-    yourString s = str;
+    badString s = str;
     assert(s.data() != str);
     assert(strcmp(s.data(), str) == 0);
   }
@@ -77,47 +79,47 @@ struct Test_string
 
   void copy_ctor()
   {
-    yourString s1 = "hello";
-    yourString s2 = s1;
+    badString s1 = "hello";
+    badString s2 = s1;
     assert(strcmp(s1.data(), s2.data()) == 0);
   }
 
   void copy_assign()
   {
-    yourString s1 = "hello";
-    yourString s2;
+    badString s1 = "hello";
+    badString s2;
     s2 = s1;
     assert(strcmp(s1.data(), s2.data()) == 0);
   }
 
   void string_assign()
   {
-    yourString s;
+    badString s;
     s = "hello";
     assert(!strcmp(s.data(), "hello"));
   }
 
   void self_assign()
   {
-    yourString s1 = "hello";
+    badString s1 = "hello";
     s1 = s1;
   }
 
   void empty()
   {
-    yourString const s1;
+    badString const s1;
     assert(s1.empty());
-    yourString const s2 = "";
+    badString const s2 = "";
     assert(s2.empty());
   }
 
   void access()
   {
-    yourString s1 = "hello";
+    badString s1 = "hello";
     s1[0] = 'a';
     assert(s1[0] == 'a');
 
-    yourString const s2 = "test";
+    badString const s2 = "test";
     assert(s2[0] == 't');
 
     assert(s1[-1]);  // initially, you may believe this cannot work
@@ -126,32 +128,32 @@ struct Test_string
 
   void find()
   {
-    yourString const s1 = "abcdef";
+    badString const s1 = "abcdef";
     assert(s1.find('c') == 2);
     assert(s1.find('z') == s1.npos);
   }
 
   void substr()
   {
-    yourString const s1 = "abcdef";
-    yourString s2 = s1.substr(0, 3);
-    yourString s3 = s1.substr(3, 3);
+    badString const s1 = "abcdef";
+    badString s2 = s1.substr(0, 3);
+    badString s3 = s1.substr(3, 3);
     assert (s2 == "abc");
     assert (s3 == "def");
   }
 
   void equality()
   {
-    yourString const s1 = "hello";
-    yourString const s2 = "goodbye";
+    badString const s1 = "hello";
+    badString const s2 = "goodbye";
     assert(s1 == s1);
     assert(s1 != s2);
   }
 
   void ordering()
   {
-    yourString s1 = "abc";
-    yourString s2 = "def";
+    badString s1 = "abc";
+    badString s2 = "def";
     assert(s1 < s2);
     assert(s2 > s1);
     assert(s1 <= s1);
@@ -160,18 +162,18 @@ struct Test_string
 
   void concatenation()
   {
-    yourString s1 = "abc";
-    yourString s2 = "def";
-    yourString s3 = s1 + s2;
-    yourString s4 = "abcdef";
+    badString s1 = "abc";
+    badString s2 = "def";
+    badString s3 = s1 + s2;
+    badString s4 = "abcdef";
     assert(s3 == s4);
   }
 
   void self_concatenation()
   {
-    yourString s1 = "abc";
+    badString s1 = "abc";
     s1 += s1;
-    yourString s2 = "abcabc";
+    badString s2 = "abcabc";
     assert(s1 == s2);
   }
 
@@ -199,47 +201,54 @@ struct Test_string
 int
 main()
 {
-  Test_string test;
+   Test_string test;
   test.run();
   return 0;
 }
-
-
 
 badString::badString()
 {
    str = new char[1];
    str[1] = '\0';
 }
-~badString();
+
+badString::~badString()
 {
-   //destructor here
+   delete [] str;
 }
 
-badString::badString(char* input)
+badString::badString(const char* input)
 {
-   str = new char[];
+   assert(input[0] != '\0');
+   str = new char[0];
    std::size_t i = 0;
    for(; input[i] == '\0'; ++i)
    {
       str[i] = input[i];
    }
-   size = i;
+   len = i;
 }
 
 badString::badString(char* input, int loc)
 {
+   assert(input[0] != '\0' && input[loc]);
    std::size_t i = 0;
    for(; i < loc; ++i)
    {
       str[i] = input[i];
    }
-   size = i;
+   len = i;
+   str[len + 1] = '\0';
 }
 
 badString::badString(const badString &right)
 {
-   //copy constructor
+   std::size_t i = 0;
+   for(; right.str[i] != '\0'; ++i)
+   {
+      str[i] = right.str[i];
+   }
+   len = i;
 }
 
    /* Operator Overloaders *
@@ -256,16 +265,134 @@ badString::badString(const badString &right)
 
     *                      */
 
-badString::badString operator=(const badString &right)
+badString badString::operator=(const badString &right)
 {
    str = new char[right.size];
    for(int i = 0; i < right.size; ++i)
    {
       str[i] = right.str[i];
    }
-   size = right.size;
-   str[size + 1] = '\0';
+   len = right.len;
+   str[len + 1] = '\0';
    return *this;
 }
 
-badstring::badString
+badString badString::operator=(const char *input)
+{
+   str = new char[0];
+   std::size_t i = 0;
+   for(; input[i] != '\0'; ++i)
+   {
+      str[i] = input[i];
+   }
+   len = i;
+   str[i + 1] = '\0';
+}
+
+badString badString::operator+(const badString &right)
+{
+
+}
+
+badString badString::operator+=(const badString &right)
+{
+   std::size_t i = len;
+   for(; right.str[i - len] != '\0'; ++i)
+   {
+      str[i] = right.str[i - len];
+   }
+   len = i;
+}
+
+bool badString::operator==(const badString &right)
+{
+   for(int i = 0; right.str[i] != '\0'; ++i)
+   {
+      if(str[i] != right.str[i])
+      {
+         return false;
+      }
+   }
+   return true;
+}
+
+bool badString::operator!=(const badString &right)
+{
+   return !(*this == right);
+}
+
+bool badString::operator<(const badString &right)
+{
+   for(int i = 0; right.str[i] != '\0'; ++i)
+   {
+      if(str[i] > right.str[i])
+      {
+         return false;
+      }
+   }
+   return true;
+}
+
+bool badString::operator>(const badString &right)
+{
+   return !(*this < right);
+}
+
+bool badString::operator<=(const badString &right)
+{
+   return ((*this < right) || (*this == right));
+}
+
+bool badString::operator>=(const badString &right)
+{
+   return ((*this > right) || (*this == right));
+}
+
+char badString::operator[](const std::size_t loc)
+{
+   assert((loc <= len) && (loc >= 0));
+   return str[loc];
+}
+
+/*
+const bool empty();
+const std::size_t size();
+char const* data();
+const std::size_t find(char);
+const badString substr(int, int);
+*/
+
+bool badString::empty() const
+{
+   return (str[0] == '\0');
+}
+
+std::size_t badString::size() const
+{
+   return len;
+}
+
+char const* badString::data()
+{
+   return str;
+}
+
+std::size_t badString::find(char target) const
+{
+   assert((target >= 0) && (target <= len));
+   for(std::size_t i = 0; str[i] != '\0'; ++i)
+   {
+      if(str[i] == target)
+      {
+         return i;
+      }
+   }
+   return npos;
+}
+
+badString badString::substr(int index, int size) const
+{
+   assert((index >= 0) && (index <= len));
+   //TODO: THAT SHIT VV
+   return badString(str, (index + size));
+}
