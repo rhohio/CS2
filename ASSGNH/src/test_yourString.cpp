@@ -36,13 +36,21 @@ struct badString
     badString &operator=(const badString &);
     badString &operator=(const char *);
     badString operator+=(const badString &);
+    badString operator+=(const char *);
     badString operator+(const badString &);
+    badString operator+(const char *);
     bool operator==(const badString &) const;
+    bool operator==(const char *) const;
     bool operator!=(const badString &) const;
+    bool operator!=(const char *) const;
     bool operator<(const badString &) const;
+    bool operator<(const char *) const;
     bool operator>(const badString &) const;
+    bool operator>(const char *) const;
     bool operator<=(const badString &) const;
+    bool operator<=(const char *) const;
     bool operator>=(const badString &) const;
+    bool operator>=(const char *) const;
     char operator[](const std::size_t) const;
     char &operator[](const std::size_t);
 
@@ -221,10 +229,10 @@ badString::badString(const char *input)
 {
     assert(input != nullptr);
     std::size_t length = 0;
-    for (; input[length] != '\0'; ++length);
+    for(; input[length] != '\0'; ++length);
     str = new char[length + 1];
     len = length;
-    for (std::size_t i = 0; input[i] != '\0'; ++i)
+    for(std::size_t i = 0; input[i] != '\0'; ++i)
     {
         str[i] = input[i];
     }
@@ -234,17 +242,17 @@ badString::badString(const char *input)
 badString::badString(char *input, int index)
 {
     std::size_t _len = 0;
-    for (; input[_len] != '\0'; ++_len);
-    if (input[0] == '\0' || index > _len)
+    for(; input[_len] != '\0'; ++_len);
+    if(input[0] == '\0' || index > _len)
     {
         std::cerr << "Error: String is null, or less than the length passed." << std::endl;
         return;
     }
     //   assert(input[0] != '\0' && input[index]);
     std::size_t i = 0;
-    for (; input[i]; ++i);
+    for(; input[i]; ++i);
     str = new char[i];
-    for (i = 0; i < index; ++i)
+    for(i = 0; i < index; ++i)
     {
         str[i] = input[i];
     }
@@ -255,9 +263,9 @@ badString::badString(char *input, int index)
 badString::badString(const badString &right)
 {
     std::size_t i = 0;
-    for (; right.str[i]; ++i);
+    for(; right.str[i]; ++i);
     str = new char[i];
-    for (i = 0; right.str[i] != '\0'; ++i)
+    for(i = 0; right.str[i] != '\0'; ++i)
     {
         str[i] = right.str[i];
     }
@@ -269,14 +277,14 @@ badString::badString(const badString &right)
 
 badString &badString::operator=(const badString &right)
 {
-    if (this == &right)
+    if(this == &right)
     {
         std::cerr << "Avoiding self assignment." << std::endl;
         return *this;
     }
     delete[] str;
     str = new char[right.len];
-    for (int i = 0; i < right.len; ++i)
+    for(int i = 0; i < right.len; ++i)
     {
         str[i] = right.str[i];
     }
@@ -289,9 +297,9 @@ badString &badString::operator=(const char *input)
 {
     delete[] str;
     std::size_t i = 0;
-    for (; input[i] != '\0'; ++i);
+    for(; input[i] != '\0'; ++i);
     str = new char[i];
-    for (i = 0; input[i] != '\0'; ++i)
+    for(i = 0; input[i] != '\0'; ++i)
     {
         str[i] = input[i];
     }
@@ -302,18 +310,36 @@ badString &badString::operator=(const char *input)
 
 badString badString::operator+(const badString &right)
 {
-    std::size_t length = len + right.len;
-    char *_str = new char[length];
+    std::size_t _len = len + right.len;
+    char *_str = new char[_len];
     int i = 0;
-    for (; i < len; ++i)
+    for(; i < len; ++i)
     {
         _str[i] = str[i];
     }
-    for (int j = 0; right.str[j] != '\0'; ++j)
+    for(int j = 0; right.str[j] != '\0'; ++j)
     {
         _str[j + i] = right.str[j];
     }
-    _str[length] = '\0';
+    _str[_len] = '\0';
+    return badString(_str);
+}
+
+badString badString::operator+(const char *input)
+{
+    std::size_t _len = 0;
+    for(; input[_len] != '\0'; ++_len);
+    char *_str = new char[_len];
+    int i = 0;
+    for(; i < len; ++i)
+    {
+        _str[i] = str[i];
+    }
+    for(int j = 0; input[j] != '\0'; ++j)
+    {
+        _str[j + i] = input[i];
+    }
+    _str[_len] = '\0';
     return badString(_str);
 }
 
@@ -323,15 +349,39 @@ badString badString::operator+=(const badString &right)
     return *this;
 }
 
+badString badString::operator+=(const char *input)
+{
+    *this = *this + input;
+    return *this;
+}
+
 bool badString::operator==(const badString &right) const
 {
-    if (right.len != len)
+    if(right.len != len)
     {
         return false;
     }
-    for (int i = 0; right.str[i] != '\0'; ++i)
+    for(int i = 0; right.str[i] != '\0'; ++i)
     {
-        if (str[i] != right.str[i])
+        if(str[i] != right.str[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool badString::operator==(const char *input) const
+{
+    int _len = 0;
+    for(; input[_len] != '\0'; ++_len);
+    if(len != _len)
+    {
+        return false;
+    }
+    for(int i = 0; input[i] != '\0'; ++i)
+    {
+        if(str[i] != input[i])
         {
             return false;
         }
@@ -344,11 +394,28 @@ bool badString::operator!=(const badString &right) const
     return !(*this == right);
 }
 
+bool badString::operator!=(const char *input) const
+{
+    return !(*this == input);
+}
+
 bool badString::operator<(const badString &right) const
 {
-    for (int i = 0; right.str[i] != '\0'; ++i)
+    for(int i = 0; right.str[i] != '\0'; ++i)
     {
-        if (str[i] > right.str[i])
+        if(str[i] > right.str[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool badString::operator<(const char *input) const
+{
+    for(int i = 0; input[i] != '\0'; ++i)
+    {
+        if(str[i] > input[i])
         {
             return false;
         }
@@ -361,9 +428,19 @@ bool badString::operator>(const badString &right) const
     return !(*this < right);
 }
 
+bool badString::operator>(const char *input) const
+{
+    return !(*this < input);
+}
+
 bool badString::operator<=(const badString &right) const
 {
     return ((*this < right) || (*this == right));
+}
+
+bool badString::operator<=(const char *input) const
+{
+    return ((*this < input) || (*this == input));
 }
 
 bool badString::operator>=(const badString &right) const
@@ -371,9 +448,14 @@ bool badString::operator>=(const badString &right) const
     return ((*this > right) || (*this == right));
 }
 
+bool badString::operator>=(const char *input) const
+{
+    return ((*this > input) || (*this == input));
+}
+
 char badString::operator[](const std::size_t index) const
 {
-    if ((index > len - 1) || (index < 0))
+    if((index > len - 1) || (index < 0))
     {
         std::cerr << "Error, given index is larger than max size. Defaulting to first space." << std::endl;
         return str[0];
@@ -383,7 +465,7 @@ char badString::operator[](const std::size_t index) const
 
 char &badString::operator[](const std::size_t index)
 {
-    if ((index > len - 1) || (index < 0))
+    if((index > len - 1) || (index < 0))
     {
         std::cerr << "Error, given index is larger than max size. Defaulting to first space." << std::endl;
         return str[0];
@@ -410,9 +492,9 @@ char const *badString::data()
 std::size_t badString::find(char target) const
 {
     assert((target < 0) || (target >= len));
-    for (std::size_t i = 0; str[i] != '\0'; ++i)
+    for(std::size_t i = 0; str[i] != '\0'; ++i)
     {
-        if (str[i] == target)
+        if(str[i] == target)
         {
             return i;
         }
