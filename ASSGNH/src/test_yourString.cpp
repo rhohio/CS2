@@ -1,5 +1,5 @@
 /*
-   COPYRIGHT (C) 2018 Student Name (UANET ID ) All rights reserved.
+   COPYRIGHT (C) 2018 Student Name (kad145) All rights reserved.
    CS assignment
    Author.  Kyle Dabbieri
             kad145@zips.uakron.edu
@@ -211,20 +211,25 @@ main()
     return 0;
 }
 
-//  Pre-Condition:
-// Post-Condition: 
+//  Pre-Condition: none
+// Post-Condition: creates new badString obj w null c str and len 0
 badString::badString()
 {
     str = new char[1];
     str[0] = '\0';
-}
-
-badString::~badString()
-{
-    delete[] str;
     len = 0;
 }
 
+//  Pre-Condition: badString obj exists
+// Post-Condition: deletes ptr to str and sets len to 0
+badString::~badString()
+{
+    delete [] str;
+    len = 0;
+}
+
+//  Pre-Condition: consturtor given a string or c string
+// Post-Condition: Creates badString object w c str input and len size of input
 badString::badString(const char *input)
 {
     assert(input != nullptr);
@@ -239,6 +244,8 @@ badString::badString(const char *input)
     str[len] = '\0';
 }
 
+//  Pre-Condition: constructor given a string or c str and int index
+// Post-Condition: creates badString object given input c str cut off at index index
 badString::badString(char *input, int index)
 {
     std::size_t _len = 0;
@@ -248,7 +255,6 @@ badString::badString(char *input, int index)
         std::cerr << "Error: String is null, or less than the length passed." << std::endl;
         return;
     }
-    //   assert(input[0] != '\0' && input[index]);
     std::size_t i = 0;
     for(; input[i]; ++i);
     str = new char[i];
@@ -260,6 +266,8 @@ badString::badString(char *input, int index)
     str[len] = '\0';
 }
 
+//  Pre-Condition: given a badString obj w len > 0
+// Post-Condition: creates a copy of given badString obj
 badString::badString(const badString &right)
 {
     std::size_t i = 0;
@@ -275,6 +283,8 @@ badString::badString(const badString &right)
 
 // Operator Overloads
 
+//  Pre-Condition: given badString obj w len > 0 and not the badString itself
+// Post-Condition: copies values from given badString to current badString
 badString &badString::operator=(const badString &right)
 {
     if(this == &right)
@@ -293,6 +303,8 @@ badString &badString::operator=(const badString &right)
     return *this;
 }
 
+//  Pre-Condition: given c str
+// Post-Condition: assigns c str to badStrign obj
 badString &badString::operator=(const char *input)
 {
     delete[] str;
@@ -308,6 +320,8 @@ badString &badString::operator=(const char *input)
     return *this;
 }
 
+//  Pre-Condition: given valid badString obj
+// Post-Condition: a new badString is returned which is given badstring w current badstring added together
 badString badString::operator+(const badString &right)
 {
     std::size_t _len = len + right.len;
@@ -325,6 +339,8 @@ badString badString::operator+(const badString &right)
     return badString(_str);
 }
 
+//  Pre-Condition: given valid c str
+// Post-Condition: adds c str to the end of given badString
 badString badString::operator+(const char *input)
 {
     std::size_t _len = 0;
@@ -343,18 +359,24 @@ badString badString::operator+(const char *input)
     return badString(_str);
 }
 
+//  Pre-Condition: given valid badString obj
+// Post-Condition: sets current badStringobj to the addition of current and given
 badString badString::operator+=(const badString &right)
 {
     *this = *this + right;
     return *this;
 }
 
+//  Pre-Condition: given valid c str
+// Post-Condition: sets current badString obj to the addition of the current and given c str
 badString badString::operator+=(const char *input)
 {
     *this = *this + input;
     return *this;
 }
 
+//  Pre-Condition: given valid badString obj
+// Post-Condition: if both are lexigraphically equal, returns true
 bool badString::operator==(const badString &right) const
 {
     if(right.len != len)
@@ -371,6 +393,8 @@ bool badString::operator==(const badString &right) const
     return true;
 }
 
+//  Pre-Condition: given vlaid c str
+// Post-Condition: if both are lexigraphically equal, returns true
 bool badString::operator==(const char *input) const
 {
     int _len = 0;
@@ -388,6 +412,14 @@ bool badString::operator==(const char *input) const
     }
     return true;
 }
+
+    /*
+     * <COMPARISON OPERATORS>
+     *
+     * PRE-CONDITIONS:  GIVEN VALID BADSTRING OBJ OR C STR
+     * POST-CONDITIONS: RETURNS IT'S LEXIGRAPHICALLY EQUIVALENT COMAPRISON
+     *
+     */
 
 bool badString::operator!=(const badString &right) const
 {
@@ -453,6 +485,12 @@ bool badString::operator>=(const char *input) const
     return ((*this > input) || (*this == input));
 }
 
+    /*
+     *</COMPARISON OPERATORS>
+     */
+
+//  Pre-Condition: given valid int index that is within range of badString obj
+// Post-Condition: returns value badStrings c str at the index
 char badString::operator[](const std::size_t index) const
 {
     if((index > len - 1) || (index < 0))
@@ -463,6 +501,8 @@ char badString::operator[](const std::size_t index) const
     return str[index];
 }
 
+//  Pre-Condition: given valid int index that is within range of badString obj
+// Post-Condition: sets indexed value to given value
 char &badString::operator[](const std::size_t index)
 {
     if((index > len - 1) || (index < 0))
@@ -473,25 +513,35 @@ char &badString::operator[](const std::size_t index)
     return str[index];
 }
 
-//Member Functions
+    /*
+     *  <MEMBER_FUNCIONS>
+     */
+
+//  Pre-Condition: none
+// Post-Condition: returns true if empty
 bool badString::empty() const
 {
     return (str[0] == '\0');
 }
 
+//  Pre-Condition: none
+// Post-Condition: returns len
 std::size_t badString::size() const
 {
     return len;
 }
 
+//  Pre-Condition: none
+// Post-Condition: returns address of str
 char const *badString::data()
 {
     return str;
 }
 
+//  Pre-Condition: valid char
+// Post-Condition: returns index of char
 std::size_t badString::find(char target) const
 {
-    assert((target < 0) || (target >= len));
     for(std::size_t i = 0; str[i] != '\0'; ++i)
     {
         if(str[i] == target)
@@ -502,8 +552,14 @@ std::size_t badString::find(char target) const
     return npos;
 }
 
+//  Pre-Condition: valid index and size ints
+// Post-Condition: returns badString based on its current value at index with size size
 badString badString::substr(int index, int size) const
 {
     assert((index >= 0) && (index <= len - 1));
     return badString(str + index, size);
 }
+
+    /*
+     *  </MEMBER_FUNCTIONS>
+     */
