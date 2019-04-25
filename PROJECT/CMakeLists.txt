@@ -13,4 +13,4 @@ set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 # Environment Information
 include_directories(${PROJECT_SOURCE_DIR}/inc)
 #link_directories(${PROJECT_SOURCE_DIR}/external/lib)
-add_executable(${NAME} ${PROJECT_SOURCE_DIR}/src/main.cpp)
+add_executable(${NAME} ${PROJECT_SOURCE_DIR}/src/main.cpp ../PROJECT/src/Restaurant.cpp ../PROJECT/src/Restaurant.h src/Meals.cpp src/Meals.h)
