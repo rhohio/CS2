@@ -60,19 +60,29 @@ const short int VITAMINS[NUMMEALS]
 
 
 int mainMenu();
-void assessMenuAnswer(int, bool&);
-void requestTable();
+void assessMenuAnswer(int, bool&, Restaurant**[]);
+void requestTable(Restaurant**[]);
+int assignTableNumber(Restaurant*[]);
+int generatePatronID(Restaurant**[]);
 
 int main()
 {
+
+    Restaurant **restaurants[NUMHFCS];
+    for(int i = 0; i < NUMHFCS; ++i)
+    {
+        for(int j = 0; j < HFCSIZES[i]; ++j)
+        {
+            restaurants[i][j] = new Restaurant(i, j);
+        }
+    }
 
     bool isMainRepeated = true;
 
     do
     {
         int menuAnswer = mainMenu();
-        assessMenuAnswer(menuAnswer, isMainRepeated);
-
+        assessMenuAnswer(menuAnswer, isMainRepeated, restaurants);
     }while(isMainRepeated);
 
 }
@@ -105,14 +115,15 @@ int mainMenu()
             invalidMenuAnswer = true;
         }
     }while(invalidMenuAnswer);
+    return menuAnswer;
 }
 
-void assessMenuAnswer(int menuAnswer, bool &mainLoopFlag)
+void assessMenuAnswer(int menuAnswer, bool &mainLoopFlag, Restaurant **restaurants[])
 {
     switch(menuAnswer)
     {
         case 1:
-            requestTable();
+            requestTable(restaurants);
             break;
         case 2:
             //freeTable();
@@ -130,13 +141,13 @@ void assessMenuAnswer(int menuAnswer, bool &mainLoopFlag)
             mainLoopFlag = false;
             break;
         default:
-            //1quit();
+            mainLoopFlag = false;
             break;
     }
     return;
 }
 
-void requestTable()
+void requestTable(Restaurant **restaurant[])
 {
     std::cout << "Please enter the restaurant choice from 1 through 8 : ";
 
@@ -147,12 +158,100 @@ void requestTable()
         std::cin >> resAnswer;
         if(resAnswer > NUMHFCS || resAnswer < 1)
         {
-            std::cout << "Please enter a valid number 1-6: ";
+            std::cout << "Please enter a valid selection [1-" << NUMHFCS << "]: ";
             invalidRestAnswer = true;
         }
     }while(invalidRestAnswer);
-    Restaurant restaurant;
-    restaurant.setResNumber(resAnswer);
+
+    int tableNumber = assignTableNumber(restaurant[resAnswer]);
+
+    if(tableNumber == -1)
+    {
+        //TODO QUEUE SHIT
+    }
+    else
+    {
+        restaurant[resAnswer][tableNumber]->setPatronID(generatePatronID(restaurant));
+        std::cout << "Your table number is " << tableNumber << " and your ID number is " //TODO SETFILL FOR ID
+                  <<  restaurant[resAnswer][tableNumber]->getPatronID() << std::endl
+                  << "Please enter the name of the Patron: ";
+
+        bool isPatronNameInvalid = false;
+        std::string patronName;
+        do
+        {
+            std::cin >> patronName;
+            if(patronName.empty())
+            {
+                std::cout << "Please enter a valid name (Not empty): ";
+                isPatronNameInvalid = true;
+            }
+        }while(isPatronNameInvalid);
+
+        restaurant[resAnswer][tableNumber]->setPatronName(patronName);
+        std::cout << "Please enter the meal number from the following choices: ";
+        for(int i = 0; i < NUMMEALS; ++i)
+        {
+            std::cout << i + 1;
+            ((i + 1) % 10) ? std::cout << ")   " : std::cout << ")  ";
+            std::cout << MEALNAMES[i] << std::endl;
+        }
+
+        std::cout << "Meal: ";
+
+        bool isMealNameInvalid = false;
+        int mealName;
+
+        do
+        {
+            std::cin >> mealName;
+            if(mealName > NUMMEALS || mealName < 1)
+            {
+                std::cout << "Please enter a valid selection [1 through " << NUMMEALS << "]: ";
+                isMealNameInvalid = true;
+            }
+        }while(isMealNameInvalid);
+
+        std::cout << "Your choice was the " << MEALNAMES[mealName - 1] << std::endl;
+    }
+
     std::cout << "You have chosen " << RESTAURANT[resAnswer - 1] << std::endl;
-    return;
+    //TODO PULL DATA FROM MAP... ALSO MAKE A MAP
+}
+
+int assignTableNumber(Restaurant *restaurant[])
+{
+    for(int i = 0; i < restaurant[0]->getResNumber(); i++)
+    {
+        if(restaurant[i]->getPatronID() != -1)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int generatePatronID(Restaurant **restaurants[])
+{
+
+    srand(time(nullptr));
+    bool isUnique = true;
+    int newID;
+
+    do
+    {
+        newID = rand() % 100000;
+        for(int i = 0; i < NUMHFCS; ++i)
+        {
+            for(int j = 0; j < HFCSIZES[restaurants[i][0]->getResNumber()]; ++j)
+            {
+                if(newID != restaurants[i][j]->getPatronID())
+                {
+                    return newID;
+                }
+                isUnique = false;
+            }
+        }
+    }while(!isUnique);
+    return newID;
 }

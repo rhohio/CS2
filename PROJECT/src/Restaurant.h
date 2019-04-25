@@ -22,9 +22,12 @@ class Restaurant
         //constructors
         Restaurant();
         ~Restaurant();
-
+        Restaurant(short, short);
         //setters and getters
-        void setResNumber(short int);
+        short int getResNumber() const;
+        void setPatronID(int);
+        int getPatronID() const;
+        void setPatronName(std::string&);
 
 };
 
