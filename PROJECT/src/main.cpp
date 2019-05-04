@@ -70,6 +70,7 @@ int generatePatronID(Restaurant**[]);
 int main()
 {
 
+    /* new branch test
     Restaurant **restaurants[NUMHFCS];
     for(int i = 0; i < NUMHFCS; ++i)
     {
@@ -79,13 +80,12 @@ int main()
             restaurants[i][j] = new Restaurant(i, j);
         }
     }
+    */
 
-    /* start of the pain
     for(int i = 0; i < NUMHFCS; ++i)
     {
         Restaurant *restPtr[i];
     }
-    */
 
     std::map<int, Meals> mealMap;
     for(int i = 0; i < NUMMEALS; ++i)
