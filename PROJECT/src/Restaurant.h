@@ -24,10 +24,16 @@ class Restaurant
         ~Restaurant();
         Restaurant(short, short);
         //setters and getters
-        short int getResNumber() const;
         void setPatronID(int);
-        int getPatronID() const;
         void setPatronName(std::string&);
+        void setPatronMealNumber(short int);
+        void setResNumber(short int);
+        void setTableNumber(short int);
+
+        short int getResNumber() const;
+        int getPatronID() const;
+
+
 
 };
 

@@ -14,6 +14,15 @@ class Meals
         int calories;
         short protein;
         short vitamins;
+    public:
+
+        Meals();
+        Meals(const std::string &, int, short, short);
+
+        std::string getPatronMealName();
+        int getCalories();
+        short getProtein();
+        short getVitamins();
 };
 
 

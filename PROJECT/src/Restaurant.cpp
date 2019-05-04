@@ -27,22 +27,39 @@ Restaurant::Restaurant(short _resNumber, short _tableNumber)
 
 }
 
-short int Restaurant::getResNumber() const
-{
-    return resNumber;
-}
-
 void Restaurant::setPatronID(int _patronID)
 {
     patronID = _patronID;
 }
 
-int Restaurant::getPatronID() const
-{
-    return patronID;
-}
-
 void Restaurant::setPatronName(std::string &_patronName)
 {
     patronName = _patronName;
+}
+
+void Restaurant::setPatronMealNumber(short int _patronMealNumber)
+{
+    patronMealNumber = _patronMealNumber;
+}
+
+void Restaurant::setResNumber(short int _resNumber)
+{
+    resNumber = _resNumber;
+}
+
+void Restaurant::setTableNumber(short int _tableNumber)
+{
+    tableNumber = _tableNumber;
+}
+
+
+
+short int Restaurant::getResNumber() const
+{
+    return resNumber;
+}
+
+int Restaurant::getPatronID() const
+{
+    return patronID;
 }
