@@ -22,7 +22,7 @@ class Restaurant
         //constructors
         Restaurant();
         ~Restaurant();
-        Restaurant(short, short);
+
         //setters and getters
         void setPatronID(int);
         void setPatronName(std::string&);
