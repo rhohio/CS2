@@ -14,15 +14,13 @@ class Restaurant
         short int tableNumber;      //next available table number
         int patronID;               //unique ID for the patron
         std::string patronName;     //patron name
-        char *mealTime;             //time of meal
+        char mealTime[21];             //time of meal
         short int patronMealNumber; //meal number
 
     public:
 
         //constructors
         Restaurant();
-        ~Restaurant();
-        Restaurant(short, short);
         //setters and getters
         void setPatronID(int);
         void setPatronName(std::string&);

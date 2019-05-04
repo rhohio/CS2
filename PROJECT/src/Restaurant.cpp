@@ -8,23 +8,21 @@
 
 Restaurant::Restaurant()
 {
-    resNumber = 0;
-    tableNumber = 0;
+    resNumber = -1;
+    tableNumber = -1;
     patronID = -1;
-    patronMealNumber = 0;
-    mealTime = {};
-}
+    patronMealNumber = -1;
+    patronName = "";
 
-Restaurant::Restaurant(short _resNumber, short _tableNumber)
-{
-    resNumber = _resNumber;
-    tableNumber = _tableNumber;
+    time_t now = time(nullptr);
+    char* timeOf = ctime(&now);
+    timeOf[20] = '\0';
 
-    patronID = -1;
-    patronMealNumber = 0;
-
-    mealTime = {};
-
+    for(int i = 0; i < 20; i ++)
+    {
+        mealTime[i] = timeOf[i];
+    }
+    mealTime[20] = '\0';
 }
 
 void Restaurant::setPatronID(int _patronID)
