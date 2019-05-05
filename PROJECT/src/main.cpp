@@ -4,7 +4,7 @@ wwwwww/*
    Author.  Kyle Dabbieri
             kad145@zips.uakron.edu
    Version. 1.01 04.23.2019
-   Purpose: Restaurant management Project
+   Purpose: Restaurant management Project.
 */
 
 #include <string>
