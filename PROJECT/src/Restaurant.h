@@ -22,6 +22,7 @@ class Restaurant
         //constructors
         Restaurant();
         ~Restaurant();
+        Restaurant(Restaurant&);
 
         //setters and getters
         void setPatronID(int);
@@ -32,8 +33,9 @@ class Restaurant
 
         short int getResNumber() const;
         int getPatronID() const;
-
-
+        std::string getPatronName() const;
+        char* getMealTime() const;
+        short int getPatronMealNumber() const;
 
 };
 

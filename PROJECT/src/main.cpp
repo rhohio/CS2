@@ -1,4 +1,4 @@
-/*
+wwwwww/*
    COPYRIGHT (C) 2018 Student Name (kad145) All rights reserved.
    CS Project
    Author.  Kyle Dabbieri
@@ -13,6 +13,8 @@
 #include <map>
 #include <utility>
 #include <queue>
+#include <fstream>
+#include <stack>
 #include "Restaurant.h"
 #include "Meals.h"
 
@@ -62,29 +64,30 @@ const short int VITAMINS[NUMMEALS]
 
 
 int mainMenu();
-void assessMenuAnswer(int, bool&, Restaurant *[], std::map<int, Meals>&, std::queue<Restaurant>&);
-void requestTable(Restaurant *[], std::map<int, Meals>&, std::queue<Restaurant>&);
-int assignTableNumber(Restaurant*[], short int);
-int generatePatronID(Restaurant *[]);
+void assessMenuAnswer(int, bool&, Restaurant **[], std::map<int, Meals>&, std::queue<Restaurant>&, std::fstream&);
+void requestTable(Restaurant **[], std::map<int, Meals>&, std::queue<Restaurant>&, std::fstream&);
+void freeTable(Restaurant **[], std::queue<Restaurant>&);
+int assignTableNumber(Restaurant**[], short int);
+int generatePatronID(Restaurant **[]);
+void writeToLog(Restaurant &, std::fstream &, std::map<int, Meals>&);
 
 int main()
 {
 
-    /*
+    std::fstream log;
+    log.open("log.txt", std::ios::in | std::ios::out | std::ios::app);
+
+    if(!log.is_open())
+    {
+        std::cerr << "Log file failed to open/generate." << std::endl;
+    }
+
+    //makes an array, that points to NUMHFCS arrays, which are arrays of size HFCSIZE[i], that point to rest objs
+    Restaurant **restPtr[NUMHFCS];
     for(int i = 0; i < NUMHFCS; ++i)
     {
-        Restaurant *restPtr[i];
+        restPtr[i] = new Restaurant *[HFCSIZES[i]];
     }
-    */
-
-    Restaurant *rest1Ptr[HFCSIZES[0]];
-    Restaurant *rest2Ptr[HFCSIZES[1]];
-    Restaurant *rest3Ptr[HFCSIZES[2]];
-    Restaurant *rest4Ptr[HFCSIZES[3]];
-    Restaurant *rest5Ptr[HFCSIZES[4]];
-    Restaurant *rest6Ptr[HFCSIZES[5]];
-    Restaurant *rest7Ptr[HFCSIZES[6]];
-    Restaurant *rest8Ptr[HFCSIZES[7]];
 
     //TODO: Fix this shit
 
@@ -101,7 +104,7 @@ int main()
     do
     {
         int menuAnswer = mainMenu();
-        assessMenuAnswer(menuAnswer, isMainRepeated, restPtr, mealMap, waitingList);
+        assessMenuAnswer(menuAnswer, isMainRepeated, restPtr, mealMap, waitingList, log);
     }while(isMainRepeated);
 
 }
@@ -137,15 +140,15 @@ int mainMenu()
     return menuAnswer;
 }
 
-void assessMenuAnswer(int menuAnswer, bool &mainLoopFlag, Restaurant *restPtr[], std::map<int, Meals> &mealMap, std::queue<Restaurant> &waitingList)
+void assessMenuAnswer(int menuAnswer, bool &mainLoopFlag, Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::queue<Restaurant> &waitingList, std::fstream &log)
 {
     switch(menuAnswer)
     {
         case 1:
-            requestTable(restPtr, mealMap, waitingList);
+            requestTable(restPtr, mealMap, waitingList, log);
             break;
         case 2:
-            //freeTable();
+            freeTable(restPtr, waitingList);
             break;
         case 3:
             //findPatron();
@@ -165,7 +168,7 @@ void assessMenuAnswer(int menuAnswer, bool &mainLoopFlag, Restaurant *restPtr[],
     }
 }
 
-void requestTable(Restaurant *restPtr[], std::map<int, Meals> &mealMap, std::queue<Restaurant> &waitingList)
+void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::queue<Restaurant> &waitingList, std::fstream &log)
 {
     std::cout << "Please enter the restaurant choice from 1 through 8 : ";
 
@@ -241,12 +244,12 @@ void requestTable(Restaurant *restPtr[], std::map<int, Meals> &mealMap, std::que
     else
     {
 
-        restPtr[resAnswer] = new Restaurant;
-        restPtr[resAnswer]->setResNumber(resAnswer);
-        restPtr[resAnswer]->setTableNumber(tableNumber);
-        restPtr[resAnswer]->setPatronID(generatePatronID(restPtr));
+        restPtr[resAnswer][tableNumber] = new Restaurant;
+        restPtr[resAnswer][tableNumber]->setResNumber(resAnswer);
+        restPtr[resAnswer][tableNumber]->setTableNumber(tableNumber);
+        restPtr[resAnswer][tableNumber]->setPatronID(generatePatronID(restPtr));
         std::cout << "Your table number is " << tableNumber + 1 << " and your ID number is " //TODO SETFILL FOR ID
-                  <<  restPtr[resAnswer]->getPatronID() << std::endl
+                  <<  restPtr[resAnswer][tableNumber]->getPatronID() << std::endl
                   << "Please enter the name of the Patron: ";
 
         bool isPatronNameInvalid = false;
@@ -261,7 +264,7 @@ void requestTable(Restaurant *restPtr[], std::map<int, Meals> &mealMap, std::que
             }
         }while(isPatronNameInvalid);
 
-        restPtr[resAnswer]->setPatronName(patronName);
+        restPtr[resAnswer][tableNumber]->setPatronName(patronName);
         std::cout << "Please enter the meal number from the following choices: " << std::endl;
         for(int i = 0; i < NUMMEALS; ++i)
         {
@@ -283,7 +286,7 @@ void requestTable(Restaurant *restPtr[], std::map<int, Meals> &mealMap, std::que
             }
         }while(isMealNameInvalid);
 
-        restPtr[resAnswer]->setPatronMealNumber(mealName);
+        restPtr[resAnswer][tableNumber]->setPatronMealNumber(mealName);
 
         std::cout << "Your choice was the " << mealMap[mealName].getPatronMealName() << std::endl
                   << mealMap[mealName].getCalories() << " calories, "
@@ -294,11 +297,88 @@ void requestTable(Restaurant *restPtr[], std::map<int, Meals> &mealMap, std::que
         std::cin.ignore();
         std::cin.get();
 
-        //TODO WRITE TO LOG FILE [Patron Name, Meal Time, Patron Meal Name, Calories, Protein, Vitamins] in separate function
+        writeToLog(*restPtr[resAnswer][tableNumber], log, mealMap);
+
     }
 }
 
-int assignTableNumber(Restaurant *restPtr[], short int restaurant)
+void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
+{
+    std::cout << "Please enter the restaurant choice, [1 - " << NUMHFCS << "]: ";
+
+    bool isResAnsInvalid = false;
+    short int resAnswer;
+
+    do
+    {
+        std::cin >> resAnswer;
+
+        if(resAnswer < 1 || resAnswer > NUMHFCS)
+        {
+            std::cout << "Please enter a valid number. [1 - " << NUMHFCS << "]: ";
+            isResAnsInvalid = true;
+        }
+    }while(isResAnsInvalid);
+    short int resNum = resAnswer - 1;
+
+    std::cout << "You have chosen " << RESTAURANT[resNum] << std::endl;
+
+    std::cout << "Please enter the table number of the patron: ";
+
+    short int tableAns;
+    bool isTableAnsInvalid = false;
+    do
+    {
+        std::cin >> tableAns;
+
+        if(!(restPtr[resNum][tableAns - 1]))
+        {
+            std::cout << "Could not find patron. Please re-enter the correct table number: ";
+            isTableAnsInvalid = true;
+        }
+    }while(isTableAnsInvalid);
+
+    short int tableNum = tableAns - 1;
+
+    std::cout << restPtr[resNum][tableNum]->getPatronName() << " has enjoyed another meal. Goodbye!" << std::endl;
+
+    delete restPtr[resNum][tableNum];
+
+    //if queue is empty, nothing to do
+    if(waitingList.empty())
+    {
+        return;
+    }
+    //if the front happens to be the right restaurant, replace old patron, and pop if off the queue
+    else if(waitingList.front().getResNumber() == resNum)
+    {
+        restPtr[resNum][tableNum] = new Restaurant(waitingList.front());
+        waitingList.pop();
+    }
+    //if front isnt the right restaurant
+    else
+    {
+        std::stack<Restaurant> tempRestStack;
+        //keep popping off the queue and saving the objs until you find the right restaurant
+        while(waitingList.front().getResNumber() != resNum)
+        {
+            tempRestStack.push(Restaurant(waitingList.front()));
+            waitingList.pop();
+        }
+        //once we've found the right rest, replace old patron, and pop it off
+        restPtr[resNum][tableNum] = new Restaurant(waitingList.front());
+        waitingList.pop();
+
+        //now place all the obj's on the queue we popped off earlier
+        while(!(tempRestStack.empty()))
+        {
+            waitingList.push(tempRestStack.top());
+            tempRestStack.pop();
+        }
+    }
+}
+
+int assignTableNumber(Restaurant **restPtr[], short int restaurant)
 {
     for(int i = 0; i < HFCSIZES[restaurant]; ++i)
     {
@@ -311,7 +391,7 @@ int assignTableNumber(Restaurant *restPtr[], short int restaurant)
 }
 
 //TODO: Fix this shit
-int generatePatronID(Restaurant *restPtr[])
+int generatePatronID(Restaurant **restPtr[])
 {
 
     srand(time(nullptr));
@@ -333,4 +413,14 @@ int generatePatronID(Restaurant *restPtr[])
         }
     }while(!isUnique);
     return newID;
+}
+
+void writeToLog(Restaurant &input, std::fstream &log, std::map<int, Meals> &mealMap)
+{
+    //TODO WRITE TO LOG FILE [Patron Name, Meal Time, Patron Meal Name, Calories, Protein, Vitamins] in separate function
+
+    log << input.getPatronName() << '\t' << input.getMealTime() << '\t' << MEALNAMES[input.getPatronMealNumber()] << '\t'
+        << mealMap[input.getPatronMealNumber()].getCalories() << '\t' << mealMap[input.getPatronMealNumber()].getProtein()
+        << '\t' << mealMap[input.getPatronMealNumber()].getVitamins() << std::endl;
+
 }

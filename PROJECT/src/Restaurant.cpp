@@ -27,9 +27,25 @@ Restaurant::Restaurant()
     mealTime[20] = '\0';
 }
 
-void Restaurant::setPatronID(int _patronID)
+Restaurant::Restaurant(Restaurant &input)
 {
-    patronID = _patronID;
+    resNumber = input.resNumber;
+    tableNumber = input.tableNumber;
+    patronID = input.patronID;
+    patronMealNumber = input.patronMealNumber;
+    patronName = input.patronName;
+
+    time_t now = time(nullptr);
+    char* timeOf = ctime(&now);
+    timeOf[20] = '\0';
+
+    mealTime = {};
+
+    for(int i = 0; i < 20; i ++)
+    {
+        mealTime[i] = timeOf[i];
+    }
+    mealTime[20] = '\0';
 }
 
 void Restaurant::setPatronName(std::string &_patronName)
@@ -62,4 +78,17 @@ short int Restaurant::getResNumber() const
 int Restaurant::getPatronID() const
 {
     return patronID;
+}
+
+std::string Restaurant::getPatronName() const
+{
+    return patronName;
+}
+char* Restaurant::getMealTime() const
+{
+    return mealTime;
+}
+short int Restaurant::getPatronMealNumber() const
+{
+    return patronMealNumber;
 }
