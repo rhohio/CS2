@@ -68,7 +68,7 @@ void assessMenuAnswer(int, bool&, Restaurant **[], std::map<int, Meals>&, std::q
 void requestTable(Restaurant **[], std::map<int, Meals>&, std::queue<Restaurant>&, std::fstream&);
 void freeTable(Restaurant **[], std::queue<Restaurant>&);
 int assignTableNumber(Restaurant**[], short int);
-int generatePatronID(Restaurant **[]);
+int generatePatronID(Restaurant **[], short int);
 void writeToLog(Restaurant &, std::fstream &, std::map<int, Meals>&);
 void findPatron(Restaurant **[], std::fstream&);
 short int findMealNumberFromObj(Restaurant **[], std::string&);
@@ -201,6 +201,8 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
 
     std::cout << "You have chosen " << RESTAURANT[resAnswer - 1] << std::endl;
 
+    resAnswer--;
+
     //assigns table number if possible, if full, assigns -1
     int tableNumber = assignTableNumber(restPtr, resAnswer);
 
@@ -227,7 +229,7 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
             }
         }while(isPatronNameInvalid);
 
-        patron.setPatronID(generatePatronID(restPtr));
+        patron.setPatronID(generatePatronID(restPtr, resAnswer));
         patron.setPatronName(patronName);
 
         std::cout << "Please enter the meal number from the following choices: " << std::endl;
@@ -261,7 +263,8 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
         std::cout << "Thank you for your patience, you've been added to the wait list." << std::endl;
 
         //push data from patron on the waiting list
-        waitingList.push(patron);
+        const Restaurant _patron(patron);
+        waitingList.push(_patron);
     }
     //restaurant isn't full
     else
@@ -270,7 +273,7 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
         restPtr[resAnswer][tableNumber] = new Restaurant;
         restPtr[resAnswer][tableNumber]->setResNumber(resAnswer);
         restPtr[resAnswer][tableNumber]->setTableNumber(tableNumber);
-        restPtr[resAnswer][tableNumber]->setPatronID(generatePatronID(restPtr));
+        restPtr[resAnswer][tableNumber]->setPatronID(generatePatronID(restPtr, resAnswer));
 
         std::cout << "Your table number is " << tableNumber + 1 << " and your ID number is " //TODO SETFILL FOR ID
                   <<  restPtr[resAnswer][tableNumber]->getPatronID() << std::endl
@@ -390,7 +393,9 @@ void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
         //keep popping off the queue and saving the objs until you find the right restaurant
         while(waitingList.front().getResNumber() != resNum)
         {
-            tempRestStack.push(Restaurant(waitingList.front()));
+
+            const Restaurant currentObj(waitingList.front());
+            tempRestStack.push(currentObj);
             waitingList.pop();
         }
 
@@ -413,7 +418,7 @@ int assignTableNumber(Restaurant **restPtr[], short int restaurant)
     for(int i = 0; i < HFCSIZES[restaurant]; ++i)
     {
         //if there isn't an obj, then there's a free table
-        if(!(restPtr[restaurant]))
+        if(!(restPtr[restaurant][i]))
         {
             return i;
         }
@@ -423,7 +428,7 @@ int assignTableNumber(Restaurant **restPtr[], short int restaurant)
 }
 
 //TODO: Fix this shit
-int generatePatronID(Restaurant **restPtr[])
+int generatePatronID(Restaurant **restPtr[], short int restaurant)
 {
 
     srand(time(nullptr));
@@ -435,7 +440,7 @@ int generatePatronID(Restaurant **restPtr[])
         newID = rand() % 100000;
         for(int i = 0; i < NUMHFCS; ++i)
         {
-            for (int j = 0; j < HFCSIZES[restPtr[i][0]->getResNumber()]; ++j)
+            for (int j = 0; j < HFCSIZES[restaurant] && restPtr[i][j]; ++j)
             {
                 if (newID == restPtr[i][j]->getPatronID())
                 {
@@ -575,6 +580,7 @@ void displayUsage(Restaurant **restPtr[], std::fstream &log)
 //TODO: THIS
 void findFavoriteRestaurants(Restaurant **restPtr[], std::fstream &log)
 {
+    /*
     std::map<short int, int> favoriteRestaurants;
     int count = 0;
     for(int i = 0; i < NUMHFCS; ++i)
@@ -597,6 +603,7 @@ void findFavoriteRestaurants(Restaurant **restPtr[], std::fstream &log)
     }
 
     getMode(favoriteRestaurants);
+     */
 
 }
 

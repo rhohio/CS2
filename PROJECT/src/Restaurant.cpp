@@ -18,16 +18,15 @@ Restaurant::Restaurant()
     char* timeOf = ctime(&now);
     timeOf[20] = '\0';
 
-    mealTime = {};
+    mealTime[20] = '\0';
 
     for(int i = 0; i < 20; i ++)
     {
         mealTime[i] = timeOf[i];
     }
-    mealTime[20] = '\0';
 }
 
-Restaurant::Restaurant(Restaurant &input)
+Restaurant::Restaurant(const Restaurant &input)
 {
     resNumber = input.resNumber;
     tableNumber = input.tableNumber;
@@ -39,13 +38,12 @@ Restaurant::Restaurant(Restaurant &input)
     char* timeOf = ctime(&now);
     timeOf[20] = '\0';
 
-    mealTime = {};
+    mealTime[20] = '\0';
 
     for(int i = 0; i < 20; i ++)
     {
         mealTime[i] = timeOf[i];
     }
-    mealTime[20] = '\0';
 }
 
 void Restaurant::setPatronName(std::string &_patronName)
@@ -56,6 +54,11 @@ void Restaurant::setPatronName(std::string &_patronName)
 void Restaurant::setPatronMealNumber(short int _patronMealNumber)
 {
     patronMealNumber = _patronMealNumber;
+}
+
+void Restaurant::setPatronID(int _patronID)
+{
+    patronID = _patronID;
 }
 
 void Restaurant::setResNumber(short int _resNumber)
@@ -84,7 +87,7 @@ std::string Restaurant::getPatronName() const
 {
     return patronName;
 }
-char* Restaurant::getMealTime() const
+char* Restaurant::getMealTime()
 {
     return mealTime;
 }
