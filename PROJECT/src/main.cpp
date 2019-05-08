@@ -15,10 +15,12 @@
 #include <queue>
 #include <fstream>
 #include <stack>
+#include <limits>
 #include "Restaurant.h"
 #include "Meals.h"
 
-
+//TODO: Pre/Post conditions and commenting
+//TODO: Optimise and/or implement error handling w excpetions
 
 /*
  *      <globalConstants>
@@ -29,7 +31,8 @@ const int NUMHFCS = 8;
 
 //Number of tables in each restaurant
 const int HFCSIZES[NUMHFCS]
-    = {19, 15, 24, 33, 61, 17, 55, 37};
+    // 19
+    = {2, 15, 24, 33, 61, 17, 55, 37};
 
 //Names of restaurants
 const std::string RESTAURANT[NUMHFCS] = {"The Salubrious Bistro", "What the Kale?",
@@ -71,20 +74,18 @@ int assignTableNumber(Restaurant**[], short int);
 int generatePatronID(Restaurant **[], short int);
 void writeToLog(Restaurant &, std::fstream &, std::map<int, Meals>&);
 void findPatron(Restaurant **[], std::fstream&);
-short int findMealNumberFromObj(Restaurant **[], std::string&);
-std::string findFavoriteMeal(std::fstream&, std::string&, short int);
+Restaurant findObjFromPatronName(Restaurant **[], std::string&);
+std::string findFavoriteMeal(std::fstream&, Restaurant&);
 void displayUsage(Restaurant **[], std::fstream&);
 void findFavoriteRestaurants(Restaurant **[], std::fstream&);
 void findFavoriteMeals(Restaurant **[], std::fstream&);
 void findFavoriteTimes(Restaurant **[], std::fstream&);
-short int getMode(std::vector<short int> &);
 void displayLog(std::fstream&);
 
 int main()
 {
 
-    std::fstream log;
-    log.open("log.txt", std::ios::in | std::ios::out | std::ios::app);
+    std::fstream log("log.txt", std::ios::in | std::ios::out | std::ios::app);
 
     if(!log.is_open())
     {
@@ -117,6 +118,9 @@ int main()
         assessMenuAnswer(mainMenu(), isMainRepeated, restPtr, mealMap, waitingList, log);
     }while(isMainRepeated);
 
+    log.close();
+    for(int i = 0; i < NUMHFCS; ++i)
+        delete [] restPtr[i];
 }
 
 
@@ -139,14 +143,20 @@ int mainMenu()
               << "Please enter a choice from the menu [6 to quit]: ";
     //validate main menu
     int menuAnswer;
-    bool invalidMenuAnswer = false;
+    bool invalidMenuAnswer;
     do
     {
         std::cin >> menuAnswer;
-        if(menuAnswer > 6 || menuAnswer < 1)
+        if(menuAnswer > 6 || menuAnswer < 1 || std::cin.fail())
         {
             std::cout << "Please enter a valid number 1-6: ";
             invalidMenuAnswer = true;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+        else
+        {
+            invalidMenuAnswer = false;
         }
     }while(invalidMenuAnswer);
 
@@ -188,14 +198,20 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
 
     //get and validate res choice
     int resAnswer;
-    bool invalidRestAnswer = false;
+    bool invalidRestAnswer;
     do
     {
         std::cin >> resAnswer;
-        if(resAnswer > NUMHFCS || resAnswer < 1)
+        if(resAnswer > NUMHFCS || resAnswer < 1 || std::cin.fail())
         {
             std::cout << "Please enter a valid selection [1-" << NUMHFCS << "]: ";
             invalidRestAnswer = true;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+        else
+        {
+            invalidRestAnswer = false;
         }
     }while(invalidRestAnswer);
 
@@ -217,15 +233,23 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
 
         patron.setResNumber(resAnswer);
 
-        bool isPatronNameInvalid = false;
+        bool isPatronNameInvalid;
         std::string patronName;
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         do
         {
-            std::cin >> patronName;
-            if(patronName.empty())
+            getline(std::cin, patronName);
+            if(patronName.empty() || std::cin.fail())
             {
                 std::cout << "Please enter a valid name (Not empty): ";
                 isPatronNameInvalid = true;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max());
+            }
+            else
+            {
+                isPatronNameInvalid = false;
             }
         }while(isPatronNameInvalid);
 
@@ -242,15 +266,21 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
 
         std::cout << "Meal: ";
 
-        bool isMealNameInvalid = false;
+        bool isMealNameInvalid;
         short int mealName;
         do
         {
             std::cin >> mealName;
-            if(mealName > NUMMEALS || mealName < 1)
+            if(mealName > NUMMEALS || mealName < 1 || std::cin.fail())
             {
                 std::cout << "Please enter a valid selection [1 through " << NUMMEALS << "]: ";
                 isMealNameInvalid = true;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            }
+            else
+            {
+                isMealNameInvalid = false;
             }
         }while(isMealNameInvalid);
 
@@ -264,7 +294,7 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
 
         //push data from patron on the waiting list
         const Restaurant _patron(patron);
-        waitingList.push(_patron);
+        waitingList.push(_patron);//TODO: wait list doesn't work as intended - see next TODO
     }
     //restaurant isn't full
     else
@@ -275,21 +305,31 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
         restPtr[resAnswer][tableNumber]->setTableNumber(tableNumber);
         restPtr[resAnswer][tableNumber]->setPatronID(generatePatronID(restPtr, resAnswer));
 
-        std::cout << "Your table number is " << tableNumber + 1 << " and your ID number is " //TODO SETFILL FOR ID
+        std::cout << "Your table number is " << tableNumber + 1 << " and your ID number is " << std::setfill('0') << std::setw(5)
                   <<  restPtr[resAnswer][tableNumber]->getPatronID() << std::endl
                   << "Please enter the name of the Patron: ";
 
-        bool isPatronNameInvalid = false;
+        bool isPatronNameInvalid;
         std::string patronName;
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         do
         {
-            std::cin >> patronName;
-            if(patronName.empty())
+            getline(std::cin, patronName);
+            if(patronName.empty() || std::cin.fail())
             {
                 std::cout << "Please enter a valid name (Not empty): ";
                 isPatronNameInvalid = true;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            }
+            else
+            {
+                isPatronNameInvalid = false;
             }
         }while(isPatronNameInvalid);
+
+        std::cin.clear();
 
         restPtr[resAnswer][tableNumber]->setPatronName(patronName);
 
@@ -302,24 +342,33 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
         }
 
         std::cout << "Meal: ";
-        bool isMealNameInvalid = false;
-        int mealName;
+        bool isMealNameInvalid;
+        short int mealNumber;
+
         do
         {
-            std::cin >> mealName;
-            if(mealName > NUMMEALS || mealName < 1)
+            std::cin >> mealNumber;
+            if(mealNumber > NUMMEALS || mealNumber < 1 || std::cin.fail())
             {
                 std::cout << "Please enter a valid selection [1 through " << NUMMEALS << "]: ";
                 isMealNameInvalid = true;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            }
+            else
+            {
+                isMealNameInvalid = false;
             }
         }while(isMealNameInvalid);
 
-        restPtr[resAnswer][tableNumber]->setPatronMealNumber(mealName);
+        mealNumber--;
 
-        std::cout << "Your choice was the " << mealMap[mealName].getPatronMealName() << std::endl
-                  << mealMap[mealName].getCalories() << " calories, "
-                  << mealMap[mealName].getProtein()  << " grams of protein, and "
-                  << mealMap[mealName].getVitamins() << " milligrams of vitamins" << std::endl;
+        restPtr[resAnswer][tableNumber]->setPatronMealNumber(mealNumber);
+
+        std::cout << "Your choice was the " << mealMap[mealNumber].getPatronMealName() << std::endl
+                  << mealMap[mealNumber].getCalories() << " calories, "
+                  << mealMap[mealNumber].getProtein()  << " grams of protein, and "
+                  << mealMap[mealNumber].getVitamins() << " milligrams of vitamins" << std::endl;
 
         std::cout << "Hit enter for next selection" << std::endl;
         std::cin.ignore();
@@ -334,17 +383,23 @@ void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
 {
     std::cout << "Please enter the restaurant choice, [1 - " << NUMHFCS << "]: ";
 
-    bool isResAnsInvalid = false;
+    bool isResAnsInvalid;
     short int resAnswer;
 
     do
     {
         std::cin >> resAnswer;
 
-        if(resAnswer < 1 || resAnswer > NUMHFCS)
+        if(resAnswer < 1 || resAnswer > NUMHFCS || std::cin.fail())
         {
             std::cout << "Please enter a valid number. [1 - " << NUMHFCS << "]: ";
             isResAnsInvalid = true;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+        else
+        {
+            isResAnsInvalid = false;
         }
     }while(isResAnsInvalid);
     short int resNum = resAnswer - 1;
@@ -354,15 +409,21 @@ void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
     std::cout << "Please enter the table number of the patron: ";
 
     short int tableAns;
-    bool isTableAnsInvalid = false;
+    bool isTableAnsInvalid;
     do
     {
         std::cin >> tableAns;
 
-        if(!(restPtr[resNum][tableAns - 1]))
+        if(!(restPtr[resNum][tableAns - 1]) || std::cin.fail())
         {
             std::cout << "Could not find patron. Please re-enter the correct table number: ";
             isTableAnsInvalid = true;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+        else
+        {
+            isTableAnsInvalid = false;
         }
     }while(isTableAnsInvalid);
 
@@ -371,7 +432,7 @@ void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
     std::cout << restPtr[resNum][tableNum]->getPatronName() << " has enjoyed another meal. Goodbye!" << std::endl;
 
     //free the memory allocated to the obj it was pointing at
-    delete restPtr[resNum][tableNum];
+    delete restPtr[resNum][tableNum]; //TODO: Not actually deleting???
 
     //if queue is empty, nothing to do
     if(waitingList.empty())
@@ -382,6 +443,7 @@ void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
     else if(waitingList.front().getResNumber() == resNum)
     {
         restPtr[resNum][tableNum] = new Restaurant(waitingList.front());
+        restPtr[resNum][tableNum]->setTableNumber(tableNum);
         waitingList.pop();
     }
     //if front isnt the right restaurant, and the queue isn't empty
@@ -401,6 +463,7 @@ void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
 
         //once we've found the right rest, replace old patron, and pop it off
         restPtr[resNum][tableNum] = new Restaurant(waitingList.front());
+        restPtr[resNum][tableNum]->setTableNumber(tableNum);
         waitingList.pop();
 
         //now place all the obj's on the queue we popped off earlier
@@ -427,7 +490,6 @@ int assignTableNumber(Restaurant **restPtr[], short int restaurant)
     return -1;
 }
 
-//TODO: Fix this shit
 int generatePatronID(Restaurant **restPtr[], short int restaurant)
 {
 
@@ -454,27 +516,39 @@ int generatePatronID(Restaurant **restPtr[], short int restaurant)
 
 void writeToLog(Restaurant &input, std::fstream &log, std::map<int, Meals> &mealMap)
 {
-    log << input.getResNumber() << '\t' << input.getPatronName() << '\t' << input.getMealTime() << '\t' << MEALNAMES[input.getPatronMealNumber()] << '\t'
-        << mealMap[input.getPatronMealNumber()].getCalories() << '\t' << mealMap[input.getPatronMealNumber()].getProtein()
-        << '\t' << mealMap[input.getPatronMealNumber()].getVitamins() << std::endl;
+    log << input.getResNumber() << ' ' << input.getPatronName() << ',' << input.getMealTime() << ','
+        << MEALNAMES[input.getPatronMealNumber()] << ',' << mealMap[input.getPatronMealNumber()].getCalories() << ' '
+        << mealMap[input.getPatronMealNumber()].getProtein() << ' '
+        << mealMap[input.getPatronMealNumber()].getVitamins() << std::endl;
 }
 
 void findPatron(Restaurant **restPtr[], std::fstream &log)
 {
     std::cout << "Please enter the patron by name: ";
-    bool isPatronNameInvalid = false;
+    bool isPatronNameInvalid;
     std::string patronName;
     do
     {
         std::cin >> patronName;
-        if(patronName.empty())
+        if( patronName.empty() || std::cin.fail())
         {
             std::cout << "Please enter a valid name (Not empty): ";
             isPatronNameInvalid = true;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+        else
+        {
+            isPatronNameInvalid = false;
         }
     }while(isPatronNameInvalid);
 
-    std::string favoriteMeal = findFavoriteMeal(log, patronName, findMealNumberFromObj(restPtr, patronName));
+    std::string favoriteMeal;
+
+    Restaurant patron = findObjFromPatronName(restPtr, patronName);
+
+    favoriteMeal = findFavoriteMeal(log, patron);
+
 
     if(favoriteMeal.empty())
     {
@@ -482,7 +556,7 @@ void findPatron(Restaurant **restPtr[], std::fstream &log)
     }
     else
     {
-        std::cout << patronName << " likes " << favoriteMeal << std::endl;
+        std::cout << patronName << " likes the " << favoriteMeal << std::endl;
     }
 
     std::cout << "Hit enter for next selection" << std::endl;
@@ -490,7 +564,7 @@ void findPatron(Restaurant **restPtr[], std::fstream &log)
     std::cin.get();
 }
 
-short int findMealNumberFromObj(Restaurant **restPtr[], std::string &patronName)
+Restaurant findObjFromPatronName(Restaurant **restPtr[], std::string &patronName)
 {
     for(int i = 0; i < NUMHFCS; ++i)
     {
@@ -498,44 +572,62 @@ short int findMealNumberFromObj(Restaurant **restPtr[], std::string &patronName)
         {
             if(restPtr[i][j]->getPatronName() == patronName)
             {
-                return restPtr[i][j]->getPatronMealNumber();
+                return *restPtr[i][j];
             }
         }
     }
-    return -1;
+    return Restaurant();
 }
 
-//TODO: Finish findFavoriteMeal
-std::string findFavoriteMeal(std::fstream &log, std::string &patronName, short int mealNumber)
+std::string findFavoriteMeal(std::fstream &log, Restaurant &input)
 {
-    std::string _patronName;
-    std::vector<std::string> mealNames;
+    std::map<std::string, int> patronsMeals;
+
+    if(!input.getPatronName().empty() && patronsMeals.find(MEALNAMES[input.getPatronMealNumber()]) != patronsMeals.end())
+        ++patronsMeals[MEALNAMES[input.getPatronMealNumber()]];
+    else if(!input.getPatronName().empty() && patronsMeals.find(MEALNAMES[input.getPatronMealNumber()]) == patronsMeals.end())
+        patronsMeals.insert(std::make_pair(MEALNAMES[input.getPatronMealNumber()], 1));
+
     std::string mealName;
+    std::string patronName;
+    log.clear();
+    log.seekg(std::ios::beg);
     while(!log.eof())
     {
-        log.ignore('\t');
-        log >> _patronName;
-        if(_patronName == patronName)
+        log.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
+        getline(log, patronName);
+        log.ignore(std::numeric_limits<std::streamsize>::max(), ',');
+        getline(log, mealName, ',');
+        if(patronName == input.getPatronName())
         {
-            log.ignore('\t');
-            getline(log, mealName, '\t');
-            mealNames.push_back(mealName);
-            log.ignore('\n');
+            if (patronsMeals.find(mealName) != patronsMeals.end())
+                ++patronsMeals[mealName];
+            else
+                patronsMeals.insert(std::make_pair(mealName, 1));
         }
+        log.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
+    log.clear();
+    log.seekg(std::ios::end);
 
-    for(auto meal: mealNames)
+    short int largestValue = 0;
+    std::string largestKey;
+
+    for(auto const &item: patronsMeals)
     {
-        if(meal == MEALNAMES[0])
+        if(item.second > largestValue)
         {
-
+            largestValue = item.second;
+            largestKey = item.first;
         }
     }
+
+    return largestKey;
 }
 
 void displayUsage(Restaurant **restPtr[], std::fstream &log)
 {
-    std::cout << "A) Favorite restaurants \nB) Favorite meals \nC)Favorite days and times \n" << std::endl
+    std::cout << "A) Favorite restaurants \nB) Favorite meals \nC) Favorite days and times \n" << std::endl
               << "Pick your favorite report from the list: ";
 
     char menuAns;
@@ -543,7 +635,7 @@ void displayUsage(Restaurant **restPtr[], std::fstream &log)
     do
     {
         std::cin >> menuAns;
-        if(menuAns != 'a' || menuAns != 'A' || menuAns != 'b' || menuAns != 'B' || menuAns != 'c' || menuAns != 'C')
+        if(!(menuAns == 'a' || menuAns == 'A' || menuAns == 'b' || menuAns == 'B' || menuAns == 'c' || menuAns == 'C'))
         {
             std::cout << "Please enter either an A, B, or C: ";
             isMenuAnsInvalid = true;
@@ -569,64 +661,286 @@ void displayUsage(Restaurant **restPtr[], std::fstream &log)
     }
 }
 
-
-/*
- * log << input.getPatronName() << '\t' << input.getMealTime() << '\t' << MEALNAMES[input.getPatronMealNumber()] << '\t'
-        << mealMap[input.getPatronMealNumber()].getCalories() << '\t' << mealMap[input.getPatronMealNumber()].getProtein()
-        << '\t' << mealMap[input.getPatronMealNumber()].getVitamins() << std::endl;
-
- */
-
-//TODO: THIS
 void findFavoriteRestaurants(Restaurant **restPtr[], std::fstream &log)
 {
-    /*
+
     std::map<short int, int> favoriteRestaurants;
-    int count = 0;
-    for(int i = 0; i < NUMHFCS; ++i)
+
+    //populate map with data from active restaurant objs
+    for(short int i = 0; restPtr[i][0] != nullptr; ++i)
     {
-        for(int j = 0; j < HFCSIZES[i]; ++j)
+        for(int j = 0; restPtr[i][j] != nullptr; j++)
         {
-            favoriteRestaurants.insert(std::make_pair(restPtr[i][j]->getResNumber(), count));
+            if(favoriteRestaurants.find(i) != favoriteRestaurants.end())
+                ++favoriteRestaurants[i];
+            else
+                favoriteRestaurants.insert(std::make_pair(i, 1));
         }
     }
-
     short int resNum;
-
-    while(!log.eof())
+    //fill map with data from log file
+    log.clear();
+    log.seekg(std::ios::beg);
+    while(log >> resNum)
     {
-        log.ignore('\t');
-        log.ignore('\t');
-        log >> resNum;
-        favoriteRestaurants.push_back(resNum);
-        log.ignore('\n');
+        if(favoriteRestaurants.find(resNum) != favoriteRestaurants.end())
+            ++favoriteRestaurants[resNum];
+        else
+            favoriteRestaurants.insert(std::make_pair(resNum, 1));
+        log.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
+    log.clear();
+    log.seekg(std::ios::end);
 
-    getMode(favoriteRestaurants);
-     */
+
+    short int largestValue;
+    short int largestKey;
+
+    //really inefficient but gets the job done
+    for(int i = 0; i < 3; ++i)
+    {
+        largestValue = 0;
+        largestKey = -1;
+
+        for(auto const &item: favoriteRestaurants)
+        {
+            if(item.second > largestValue)
+            {
+                largestValue = item.second;
+                largestKey = item.first;
+            }
+        }
+
+        if(largestKey == -1)
+        {
+            std::cout << "There is no more restaurant data." << std::endl;
+        }
+        else
+        {
+            std::cout << "The ";
+            switch(i)
+            {
+                case 0: std::cout << "first";
+                    break;
+                case 1: std::cout << "second";
+                    break;
+                case 2: std::cout << "third";
+                    break;
+                default:
+                    break;
+            }
+
+            std::cout << " most favorite restaurant is " << RESTAURANT[largestKey] << " with " << favoriteRestaurants[largestKey] << " patrons." << std::endl;
+        }
+        favoriteRestaurants.erase(largestKey);
+    }
 
 }
 
 void findFavoriteMeals(Restaurant **restPtr[], std::fstream &log)
 {
+    std::map<std::string, int> favoriteMeals;
 
+    //fill the map with data from active restuant objs
+    for(short int i = 0; restPtr[i][0] != nullptr; ++i)
+    {
+        for(int j = 0; restPtr[i][j] != nullptr; j++)
+        {
+            if(favoriteMeals.find(MEALNAMES[restPtr[i][j]->getPatronMealNumber()]) != favoriteMeals.end())
+                ++favoriteMeals[MEALNAMES[restPtr[i][j]->getPatronMealNumber()]];
+            else
+                favoriteMeals.insert(std::make_pair(MEALNAMES[restPtr[i][j]->getPatronMealNumber()], 1));
+        }
+    }
+
+    std::string mealName;
+    log.clear();
+    log.seekg(std::ios::beg);
+    while(!log.eof())
+    {
+        log.ignore(std::numeric_limits<std::streamsize>::max(), ',');
+        log.ignore(std::numeric_limits<std::streamsize>::max(), ',');
+        getline(log, mealName, ',');
+        if(favoriteMeals.find(mealName) != favoriteMeals.end())
+            ++favoriteMeals[mealName];
+        else
+            favoriteMeals.insert(std::make_pair(mealName, 1));
+        log.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    log.clear();
+    log.seekg(std::ios::end);
+
+    short int largestValue;
+    std::string largestKey;
+
+    //really inefficient but gets the job done
+    for(int i = 0; i < 3; ++i)
+    {
+        largestValue = 0;
+        largestKey = "";
+
+        for(auto const &item: favoriteMeals)
+        {
+            if(item.second > largestValue)
+            {
+                largestValue = item.second;
+                largestKey = item.first;
+            }
+        }
+
+        if(largestKey.empty())
+        {
+            std::cout << "There is no more restaurant data." << std::endl;
+        }
+        else
+        {
+            std::cout << "The ";
+            switch(i)
+            {
+                case 0: std::cout << "first";
+                    break;
+                case 1: std::cout << "second";
+                    break;
+                case 2: std::cout << "third";
+                    break;
+                default:
+                    break;
+            }
+
+            std::cout << " most favorite meal is " << largestKey << " with " << favoriteMeals[largestKey] << " orders." << std::endl;
+        }
+        favoriteMeals.erase(largestKey);
+    }
 }
 
 
 void findFavoriteTimes(Restaurant **restPtr[], std::fstream &log)
 {
+    std::map<std::string, int> favoriteTimes;
+    char timecString[7];
+    std::string timeString;
+    for(short int i = 0; restPtr[i][0] != nullptr; ++i)
+    {
+        for(int j = 0; restPtr[i][j] != nullptr; ++j)
+        {
+            for(int k = 0; k < 3; k++)
+            {
+                timecString[k] = restPtr[i][j]->getMealTime()[k];//TODO: Fix bug where only records Day and not time
+            }
+            timecString[3] = ' ';
+            for(int l = 0; l > 2; ++l)
+            {
+                timecString[l + 3] = restPtr[i][j]->getMealTime()[l + 12];
+            }
+            timecString[6] = '\0';
 
-}
+            timeString = timecString;
+
+            if(favoriteTimes.find(timeString) != favoriteTimes.end())
+                ++favoriteTimes[timeString];
+            else
+                favoriteTimes.insert(std::make_pair(timeString, 1));
+        }
+    }
+
+    log.clear();
+    log.seekg(std::ios::beg);
+    std::string mealString;
+    std::string mealDay;
+    std::string mealTime;
+    while(!log.eof())
+    {
+        log.ignore(std::numeric_limits<std::streamsize>::max(), ',');
+        getline(log, mealString, ',');
+        if(mealString.length() > 10)
+        {
+            mealString = mealString.substr(0,3) + " " + mealString.substr(11, 2);
+            if(favoriteTimes.find(mealString) != favoriteTimes.end())
+                ++favoriteTimes[mealString];
+            else
+                favoriteTimes.insert(std::make_pair(mealString, 1));
+        }
+        log.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    log.clear();
+    log.seekg((std::ios::end));
+
+    int largestValue;
+    std::string largestKey;
+
+    for(int i = 0; i < 3; ++i)
+    {
+        largestValue = 0;
+        largestKey = "";
+
+        for(auto const &item: favoriteTimes)
+        {
+            if(item.second > largestValue)
+            {
+                largestValue = item.second;
+                largestKey = item.first;
+            }
+        }
+        if(!(largestKey.empty() || largestKey.length() < 6))
+        {
+            std::cout << "The ";
+            switch(i)
+            {
+                case 0: std::cout << "first";
+                    break;
+                case 1: std::cout << "second";
+                    break;
+                case 2: std::cout << "third";
+                    break;
+                default:
+                    break;
+            }
+
+            std::cout << " most favorite day and times are " << largestKey.substr(0, 3);
+            if(largestKey.at(2) == 'n' || largestKey.at(2) == 'i')
+            {
+                std::cout << "days between ";
+            }
+            else if(largestKey.at(2) == 'e')
+            {
+                std::cout << "sdays between ";
+            }
+            else if(largestKey.at(2) == 'd')
+            {
+                std::cout << "nesdays between ";
+            }
+            else if(largestKey.at(2) == 'u')
+            {
+                std::cout << "rsdays between ";
+            }
+            else if(largestKey.at(2) == 't')
+            {
+                std::cout << "urdays between ";
+            }
+
+            mealTime = largestKey.substr(4, 2);
+            if(mealTime.at(0) == '0')
+            {
+                std::cout << mealTime << " and " << int(mealTime.at(1)) + 1 << " AM" << std::endl; //TODO: account for 12 AM
+            }
+            else if(mealTime == "12")
+            {
+                std::cout << mealTime << "and 1 PM";
+            }
+            else
+            {
+                std::cout << stoi(mealTime) - 12 << " and " << stoi(mealTime) - 11 << " PM" << std::endl;
+            }
 
 
-short int getMode(std::vector<short int> &input)
-{
-    short int count[input.size()];
 
+        }
+        favoriteTimes.erase(largestKey);
+    }
 }
 
 /*
-    log << input.getResNumber() << '\t' << input.getPatronName() << '\t' << input.getMealTime() << MEALNAMES[input.getPatronMealNumber()] << '\t'
+    log << input.getResNumber() << '\t' << input.getPatronName() << '\t' << input.getMealTime() << '\t' << MEALNAMES[input.getPatronMealNumber()] << '\t'
         << mealMap[input.getPatronMealNumber()].getCalories() << '\t' << mealMap[input.getPatronMealNumber()].getProtein()
         << '\t' << mealMap[input.getPatronMealNumber()].getVitamins() << std::endl;
 */
@@ -658,22 +972,34 @@ void displayLog(std::fstream &log)
     short int protein;
     short int vitamins;
 
-    while(!log.eof())
+    log.clear();
+    log.seekg(0, std::ios::beg);
+
+    std::cout << "Log entries for " << RESTAURANT[_resNum] << ":" << std::endl;
+
+    while(log >> resNum)
     {
-        log >> resNum;
         if(resNum == _resNum)
         {
-            log >> patronName;
-            log >> mealTime;
-            log >> mealName;
+            getline(log, patronName, ',');
+            getline(log, mealTime, ',');
+            getline(log, mealName, ',');
             log >> calories;
             log >> protein;
             log >> vitamins;
 
-            std::cout << "Log entries for " << RESTAURANT[resNum] << std::endl
-                      << patronName << " had " << mealName << " with "
+            std::cout << patronName << " had " << mealName << " with "
                       << calories << " calories, " << protein << " grams of protein, and "
                       << vitamins << " mg of vitamins at " << mealTime << std::endl;
+            log.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+        else
+        {
+            log.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
     }
+    std::cout << "End of log entires for " << RESTAURANT[_resNum] << std::endl;
+
+    log.clear();
+    log.seekg(0, std::ios::end);
 }
