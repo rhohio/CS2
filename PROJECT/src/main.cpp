@@ -19,7 +19,7 @@
 #include "Restaurant.h"
 #include "Meals.h"
 
-//TODO: Pre/Post conditions and commenting
+//TODO: commenting
 //TODO: Optimise and/or implement error handling w excpetions
 
 /*
@@ -85,15 +85,17 @@ void displayLog(std::fstream&);
 int main()
 {
 
+    //generate-open log file
     std::fstream log("log.txt", std::ios::in | std::ios::out | std::ios::app);
 
+    //if log fails to open, abort
     if(!log.is_open())
     {
         std::cerr << "Log file failed to open/generate." << std::endl;
         return -1;
     }
 
-    //makes an array, that points to NUMHFCS arrays, which are arrays of size HFCSIZE[i], that point to rest objs
+    //makes an array, that points to NUMHFCS arrays, which are arrays of size HFCSIZE[i], that will point to rest objs
     Restaurant **restPtr[NUMHFCS];
     for(int i = 0; i < NUMHFCS; ++i)
     {
@@ -118,12 +120,16 @@ int main()
         assessMenuAnswer(mainMenu(), isMainRepeated, restPtr, mealMap, waitingList, log);
     }while(isMainRepeated);
 
+    //close log file
     log.close();
+
+    //free up memory from leftover restPtrs
     for(int i = 0; i < NUMHFCS; ++i)
         delete [] restPtr[i];
 }
 
-
+//Pre-Condition : N/A
+//Post-condition: Returns answer to a menu of choices
 int mainMenu()
 {
     //display main menu
@@ -160,9 +166,12 @@ int mainMenu()
         }
     }while(invalidMenuAnswer);
 
+    //return validated menu answer
     return menuAnswer;
 }
 
+//Pre-Condition : Main menu answer has been retireved and validated, restPtr's have been init'd, same with the mealMap and waiitingList, and log
+//Post-Condition: sends user and data to correct subfunction based on menuanswer
 void assessMenuAnswer(int menuAnswer, bool &mainLoopFlag, Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::queue<Restaurant> &waitingList, std::fstream &log)
 {
     //based on menu answer, go to appropriate function
@@ -192,9 +201,11 @@ void assessMenuAnswer(int menuAnswer, bool &mainLoopFlag, Restaurant **restPtr[]
     }
 }
 
+//Pre-Condition : restPtrs been init's, mealMap is populated with meals, waitingList is init'd, log is open
+//Post-Condition: based on table availablility, either adds patron to wiaitng list or assigns thema table
 void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::queue<Restaurant> &waitingList, std::fstream &log)
 {
-    std::cout << "Please enter the restaurant choice from 1 through 8 : ";
+    std::cout << "Please enter the restaurant choice from 1 through "<< NUMHFCS << ": ";
 
     //get and validate res choice
     int resAnswer;
@@ -217,6 +228,7 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
 
     std::cout << "You have chosen " << RESTAURANT[resAnswer - 1] << std::endl;
 
+    //decrement resAnswer to get actual restaurant number
     resAnswer--;
 
     //assigns table number if possible, if full, assigns -1
@@ -379,6 +391,8 @@ void requestTable(Restaurant **restPtr[], std::map<int, Meals> &mealMap, std::qu
     }
 }
 
+//Pre-Condition : restPtr is init'd, waitingLIst had been init
+//Post-Condition: frees up table from current patron, if waiting list is populated, replaces patron with patron on waiting list
 void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
 {
     std::cout << "Please enter the restaurant choice, [1 - " << NUMHFCS << "]: ";
@@ -475,6 +489,8 @@ void freeTable(Restaurant **restPtr[], std::queue<Restaurant> &waitingList)
     }
 }
 
+//Pre-Condition : restPtr init, passed current restaurant number
+//Post-Condition: returns next available table number, -1 if restuarant is full
 int assignTableNumber(Restaurant **restPtr[], short int restaurant)
 {
     //iterate through the restuarants tables
@@ -490,6 +506,8 @@ int assignTableNumber(Restaurant **restPtr[], short int restaurant)
     return -1;
 }
 
+//Pre-Condition : restptr init, passed current restaurant number
+//Post-Condition: returns a unique 5 digit int that doesnt exist in any other restaurant obj
 int generatePatronID(Restaurant **restPtr[], short int restaurant)
 {
 
@@ -514,6 +532,8 @@ int generatePatronID(Restaurant **restPtr[], short int restaurant)
     return newID;
 }
 
+//Pre-Condition : input is populated with values, log is open, nealMap is populates with correct values
+//Post-Condition: writes info from restaurant obj to log file
 void writeToLog(Restaurant &input, std::fstream &log, std::map<int, Meals> &mealMap)
 {
     log << input.getResNumber() << ' ' << input.getPatronName() << ',' << input.getMealTime() << ','
@@ -522,6 +542,8 @@ void writeToLog(Restaurant &input, std::fstream &log, std::map<int, Meals> &meal
         << mealMap[input.getPatronMealNumber()].getVitamins() << std::endl;
 }
 
+//Pre-Condition : rest ptr init, log is open
+//Post-Condition: finds patron by name, outputs patron favorite meal
 void findPatron(Restaurant **restPtr[], std::fstream &log)
 {
     std::cout << "Please enter the patron by name: ";
@@ -564,6 +586,8 @@ void findPatron(Restaurant **restPtr[], std::fstream &log)
     std::cin.get();
 }
 
+//Pre-Condition : restPtr init, populated w valies, patronname isnt empty
+//Post-Condition: finds address of obj w patronName patronName
 Restaurant findObjFromPatronName(Restaurant **restPtr[], std::string &patronName)
 {
     for(int i = 0; i < NUMHFCS; ++i)
@@ -579,6 +603,8 @@ Restaurant findObjFromPatronName(Restaurant **restPtr[], std::string &patronName
     return Restaurant();
 }
 
+//Pre-Condition : log is open and populated, input is populated w values
+//Post-Condition: finds most occurring meal of given restaurant obj
 std::string findFavoriteMeal(std::fstream &log, Restaurant &input)
 {
     std::map<std::string, int> patronsMeals;
@@ -625,6 +651,8 @@ std::string findFavoriteMeal(std::fstream &log, Restaurant &input)
     return largestKey;
 }
 
+//Pre-Condition : restptr and log are init, populated with some values
+//Post-Condition: prompts sub menu to choose which usage to display, sneds user and data to appropriate sub functions
 void displayUsage(Restaurant **restPtr[], std::fstream &log)
 {
     std::cout << "A) Favorite restaurants \nB) Favorite meals \nC) Favorite days and times \n" << std::endl
@@ -661,6 +689,8 @@ void displayUsage(Restaurant **restPtr[], std::fstream &log)
     }
 }
 
+//Pre-Condition : rest ptr, log are init; populated with some values
+//Post-Condition: finds three most occuring resturants from current objs and log file
 void findFavoriteRestaurants(Restaurant **restPtr[], std::fstream &log)
 {
 
@@ -737,6 +767,8 @@ void findFavoriteRestaurants(Restaurant **restPtr[], std::fstream &log)
 
 }
 
+//Pre-Condition : rest ptr, log are init; populated with some values
+//Post-Condition: finds three most occuring meals from current objs and log file
 void findFavoriteMeals(Restaurant **restPtr[], std::fstream &log)
 {
     std::map<std::string, int> favoriteMeals;
@@ -813,7 +845,8 @@ void findFavoriteMeals(Restaurant **restPtr[], std::fstream &log)
     }
 }
 
-
+//Pre-Condition : rest ptr, log are init; populated with some values
+//Post-Condition: finds three most occuring times and days from current objs and log file
 void findFavoriteTimes(Restaurant **restPtr[], std::fstream &log)
 {
     std::map<std::string, int> favoriteTimes;
@@ -828,9 +861,9 @@ void findFavoriteTimes(Restaurant **restPtr[], std::fstream &log)
                 timecString[k] = restPtr[i][j]->getMealTime()[k];//TODO: Fix bug where only records Day and not time
             }
             timecString[3] = ' ';
-            for(int l = 0; l > 2; ++l)
+            for(int l = 0; l < 2; ++l)
             {
-                timecString[l + 3] = restPtr[i][j]->getMealTime()[l + 12];
+                timecString[l + 4] = restPtr[i][j]->getMealTime()[l + 12];
             }
             timecString[6] = '\0';
 
@@ -919,33 +952,30 @@ void findFavoriteTimes(Restaurant **restPtr[], std::fstream &log)
             }
 
             mealTime = largestKey.substr(4, 2);
-            if(mealTime.at(0) == '0')
+            if(mealTime == "00")
             {
-                std::cout << mealTime << " and " << int(mealTime.at(1)) + 1 << " AM" << std::endl; //TODO: account for 12 AM
+                std::cout << "12 and " << int(mealTime.at(1)) + 1 << " AM" << std::endl;
             }
-            else if(mealTime == "12")
+            else if(mealTime.at(0) == '0')
             {
-                std::cout << mealTime << "and 1 PM";
+                std::cout << mealTime.at(1) << " and " << int(mealTime.at(1)) + 1 << " AM" << std::endl;
+            }
+            else if(mealTime == "12" || mealTime == "11")
+            {
+                std::cout << mealTime << " and ";
+                (mealTime.at(1) == '2') ? std::cout << "1 PM" << std::endl : std::cout << "12 PM" << std::endl;
             }
             else
             {
                 std::cout << stoi(mealTime) - 12 << " and " << stoi(mealTime) - 11 << " PM" << std::endl;
             }
-
-
-
         }
         favoriteTimes.erase(largestKey);
     }
 }
 
-/*
-    log << input.getResNumber() << '\t' << input.getPatronName() << '\t' << input.getMealTime() << '\t' << MEALNAMES[input.getPatronMealNumber()] << '\t'
-        << mealMap[input.getPatronMealNumber()].getCalories() << '\t' << mealMap[input.getPatronMealNumber()].getProtein()
-        << '\t' << mealMap[input.getPatronMealNumber()].getVitamins() << std::endl;
-*/
-
-
+//Pre-Condition : log is open and has values
+//Post-Condition: prints info from log
 void displayLog(std::fstream &log)
 {
     std::cout << "Which restaurant would you like to view the log for? [1 - " << NUMHFCS << "]: ";
@@ -990,7 +1020,7 @@ void displayLog(std::fstream &log)
 
             std::cout << patronName << " had " << mealName << " with "
                       << calories << " calories, " << protein << " grams of protein, and "
-                      << vitamins << " mg of vitamins at " << mealTime << std::endl;
+                      << vitamins << " mg of vitamins on " << mealTime << std::endl;
             log.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
         else
